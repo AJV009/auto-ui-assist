@@ -1,0 +1,82 @@
+[
+    {
+      "task": "renewable_energy_presentation",
+      "prompt": "Create a presentation about the benefits of renewable energy. Include a pie chart showing the global energy mix and a bar plot comparing the costs of different energy sources. Use a green technology theme and make it look professional."
+    },
+    {
+      "task": "ai_healthcare_research_summary",
+      "prompt": "Make a presentation summarizing the key findings of the research paper 'Advances in AI for Healthcare' by John Doe et al. Include the most important figures and tables from the paper. Use a clean, minimalistic theme suitable for an academic audience."
+    },
+    {
+      "task": "product_sales_data_formatting",
+      "prompt": "Create an Excel sheet with a table of sales data for different products. Include columns for product name, unit price, quantity sold, and total revenue. Calculate the average price and total revenue for each product. Format the column names in bold and merge the cells in the header row."
+    },
+    {
+      "task": "employee_bonus_calculation",
+      "prompt": "Given an Excel sheet with employee data (name, department, salary), create a new column that calculates the bonus for each employee based on their department (10% for Sales, 5% for Marketing, and 3% for others). Create a pivot table showing the average salary and total bonus by department."
+    },
+    {
+      "task": "software_engineer_cover_letter",
+      "prompt": "Draft a professional cover letter for a software engineer position at Google. Highlight the candidate's experience with Python, machine learning, and web development. Use a formal tone and a clean, modern template."
+    },
+    {
+      "task": "yoga_studio_brochure",
+      "prompt": "Create a brochure for a new yoga studio opening in downtown. Include information about the classes offered, instructors, and pricing. Use a calming color scheme and include images of people practicing yoga."
+    },
+    {
+      "task": "carbon_footprint_app_pitch",
+      "prompt": "Design a pitch deck for a new mobile app that helps users track their carbon footprint. Include slides on the problem, solution, target market, and financial projections. Use a sleek, modern theme and include relevant icons and graphics."
+    },
+    {
+      "task": "customer_segmentation",
+      "prompt": "Given an Excel sheet with customer data (name, email, total purchases), create a new sheet that segments customers into 3 groups based on their total purchases (high, medium, low). Create a summary table with the count and average purchase amount for each segment."
+    },
+    {
+      "task": "sustainable_fashion_press_release",
+      "prompt": "Write a press release announcing the launch of a new sustainable fashion line. Include quotes from the designer and information about the eco-friendly materials used. Format the document with a header, subheadings, and a footer with contact information."
+    },
+    {
+      "task": "ai_history_presentation",
+      "prompt": "Create a presentation on the history of artificial intelligence. Include slides on key milestones, influential figures, and current applications. Use a futuristic theme and include images and videos to make the content engaging."
+    },
+    {
+      "task": "inventory_value_calculation",
+      "prompt": "Given an Excel sheet with inventory data (product name, quantity in stock, unit price), create a new column that calculates the total value of each product. Create a pivot table showing the total value and average price by product category."
+    },
+    {
+      "task": "remote_work_productivity_report",
+      "prompt": "Draft a report on the impact of remote work on employee productivity. Include data from recent studies and expert opinions. Use a professional template with a table of contents and page numbers."
+    },
+    {
+      "task": "meditation_benefits_presentation",
+      "prompt": "Design a presentation on the benefits of meditation for mental health. Include scientific research and case studies. Use a calming color palette and include images of people meditating in nature."
+    },
+    {
+      "task": "student_performance_analysis",
+      "prompt": "Given an Excel sheet with student data (name, grade, subject, score), create a new sheet that calculates the average score for each student across all subjects. Create a pivot table showing the average score by grade and subject."
+    },
+    {
+      "task": "nonprofit_fundraiser_newsletter",
+      "prompt": "Create a newsletter for a non-profit organization highlighting their recent fundraising event. Include photos from the event and quotes from attendees. Use a colorful, eye-catching template with a clear call-to-action."
+    },
+    {
+      "task": "space_exploration_future",
+      "prompt": "Make a presentation on the future of space exploration. Include slides on upcoming missions, potential challenges, and the benefits of investing in space research. Use a dark, space-themed background and include high-quality images of planets and spacecraft."
+    },
+    {
+      "task": "project_duration_budget_analysis",
+      "prompt": "Given an Excel sheet with project data (project name, start date, end date, budget), create a new column that calculates the duration of each project in days. Create a summary table with the total budget and average duration by project type."
+    },
+    {
+      "task": "blockchain_supply_chain_whitepaper",
+      "prompt": "Draft a white paper on the potential applications of blockchain technology in supply chain management. Include examples of successful implementations and discuss the challenges and benefits. Use a professional template with a clear hierarchy of headings."
+    },
+    {
+      "task": "elearning_platform_pitch",
+      "prompt": "Design a pitch deck for a new e-learning platform that offers courses on digital marketing. Include slides on the target audience, unique selling points, and pricing plans. Use a modern, tech-savvy theme and include screenshots of the platform."
+    },
+    {
+      "task": "popular_tourist_destination_guide",
+      "prompt": "Create a travel guide for a popular tourist destination. Include information on top attractions, restaurants, and accommodations. Use a visually appealing template with high-quality images and a map of the area."
+    }
+  ]
