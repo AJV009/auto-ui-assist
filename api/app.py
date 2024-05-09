@@ -17,10 +17,10 @@ class PlanStage1Body(BaseModel):
 async def plan_stage_1(body: PlanStage1Body):
     async def event_generator():
         yield json.dumps({'success': 'Analyzing Query. Please wait!', 'action': "processing"}).encode() + b'\n'
-        
+
         # Query Corrector Agent
         yield json.dumps({'success': 'Analyzing: Running Query Corrector Agent', 'action': "processing"}).encode() + b'\n'
         response = query_corrector_agent(body.uuid, body.query, body.os_apps, body.os)
-        yield json.dumps({'success': 'Query correction and app list extraction completed.', 'action': "completed", 'response': response}).encode() + b'\n'
-    
+        yield json.dumps({'success': response, 'action': "processing"}).encode() + b'\n'
+
     return StreamingResponse(event_generator())

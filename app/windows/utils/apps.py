@@ -2,6 +2,10 @@ import win32com.client
 import os
 import json
 import tempfile
+import subprocess
+from difflib import SequenceMatcher
+
+specialDirectories = ["AllUsersPrograms", "StartMenu", "AllUsersDesktop"]
 
 def app_list(uuid, fetch_old=False):
     """
@@ -16,7 +20,6 @@ def app_list(uuid, fetch_old=False):
         if old_app_list:
             return old_app_list
 
-    specialDirectories = ["AllUsersPrograms", "StartMenu", "AllUsersDesktop"]
     objShell = win32com.client.Dispatch("WScript.Shell")
 
     completeApplicationDirectory = {}
@@ -60,3 +63,49 @@ def create_directory_structure(directory):
                 current_level[file] = None
 
     return structure
+
+def launch_app(uuid, app_name):
+    '''
+    Launch the application
+    '''
+    app_directory = app_list(uuid, fetch_old=True)
+    
+    # Find the best match
+    results = []
+    threshold = 0.8
+    def traverse_directory(directory, path):
+        for key, value in directory.items():
+            if value is None:
+                similarity = SequenceMatcher(None, app_name, key).ratio()
+                if similarity >= threshold:
+                    results.append((path + [key], similarity))
+            else:
+                traverse_directory(value, path + [key])
+    traverse_directory(app_directory, [])
+    if results:
+        best_match = max(results, key=lambda x: x[1])
+        app_dir_match = best_match[0]
+        root_folder = app_dir_match[0]
+        relative_path = os.path.join(*app_dir_match[1:])
+        if root_folder in specialDirectories:
+            shell = win32com.client.Dispatch("WScript.Shell")
+            base_path = shell.SpecialFolders(root_folder)
+            app_path = os.path.join(base_path, relative_path)
+            try:
+                if app_path.lower().endswith(".lnk"):
+                    shell = win32com.client.Dispatch("WScript.Shell")
+                    shortcut = shell.CreateShortcut(app_path)
+                    target_path = shortcut.Targetpath
+                    subprocess.Popen(target_path)
+                    return {"success": f"Launched application: {target_path}"}
+                else:
+                    subprocess.Popen(app_path)
+                    return {"success": f"Launched application: {app_path}"}
+            except FileNotFoundError:
+                return {"error": f"Application not found: {app_path}"}
+            except Exception as e:
+                return {"error": f"Error launching application: {str(e)}"}
+        else:
+            return {"error": "No similar application to launch found"}
+    else:
+        return {"error": "No similar application to launch found"}

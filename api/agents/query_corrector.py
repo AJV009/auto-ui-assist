@@ -134,5 +134,3 @@ New App list:
     )
     response_dict = json.loads(response_message.content[0].text)
     return response_dict
-
-
