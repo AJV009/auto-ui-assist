@@ -1,0 +1,26 @@
+{
+    "AllUsersPrograms": {
+      "Access.lnk": null,
+      "Brave.lnk": null,
+      "Epic Games Launcher.lnk": null,
+      "Excel.lnk": null,
+      "Microsoft Edge.lnk": null,
+      "OneDrive.lnk": null,
+      "OneNote.lnk": null,
+      "Outlook.lnk": null,
+      "PowerPoint.lnk": null,
+      "Publisher.lnk": null,
+      "Word.lnk": null
+    },
+    "StartMenu": {
+      "Programs": {
+        "Administrative Tools.lnk": null,
+        "F1_23.lnk": null,
+        "File Explorer.lnk": null
+      }
+    },
+    "AllUsersDesktop": {
+      "Brave.lnk": null,
+      "VLC media player.lnk": null
+    }
+  } 
