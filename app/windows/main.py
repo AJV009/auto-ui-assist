@@ -11,6 +11,17 @@ import json
 
 load_dotenv()
 
+'''
+TODO:
+1. Take the query from the user using stdin
+2. Enable Query Corrector
+    Returns the following:
+    - Corrected Query
+    - Extracted launch applications in order
+    - Additional questions for the user
+4. Take the new user inputs and Rerun the query corrector until the query is detailed enough
+'''
+
 user_session_uuid = str(uuid.uuid4())
 query = os.getenv("QUERY")
 
