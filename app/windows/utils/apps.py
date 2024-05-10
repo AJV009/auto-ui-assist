@@ -11,7 +11,7 @@ def app_list(uuid, fetch_old=False):
     """
     List all applications in the system.
     """
-    app_temp_dir = os.path.join(tempfile.gettempdir(), "my_app")
+    app_temp_dir = os.path.join(tempfile.gettempdir(), "autoUIAssist")
     os.makedirs(app_temp_dir, exist_ok=True)
     app_list_file = os.path.join(app_temp_dir, f"{uuid}_app_list.json")
 

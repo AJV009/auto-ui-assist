@@ -1,26 +1,29 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from agents.query_corrector import query_corrector_agent
-import json
-import asyncio
+
+from agents.task_corrector import task_corrector_agent
 
 app = FastAPI()
 
 class PlanStage1Body(BaseModel):
-    uuid: str
-    query: str
-    os_apps: dict
+    userid: str
+    sessionid: str
+    task: str
+    app_list: dict
     os: str
+    refinement: str
 
 @app.post("/plan_stage_1")
 async def plan_stage_1(body: PlanStage1Body):
-    async def event_generator():
-        yield json.dumps({'success': 'Analyzing Query. Please wait!', 'action': "processing"}).encode() + b'\n'
-
-        # Query Corrector Agent
-        yield json.dumps({'success': 'Analyzing: Running Query Corrector Agent', 'action': "processing"}).encode() + b'\n'
-        response = query_corrector_agent(body.uuid, body.query, body.os_apps, body.os)
-        yield json.dumps({'success': response, 'action': "processing"}).encode() + b'\n'
-
-    return StreamingResponse(event_generator())
+    response = task_corrector_agent(
+        userid=body.userid,
+        sessionid=body.sessionid,
+        task=body.task,
+        app_list=body.app_list,
+        os=body.os,
+        refinement=body.refinement
+    )
+    json_compatible_item_data = jsonable_encoder(response)
+    return JSONResponse(content=json_compatible_item_data)
