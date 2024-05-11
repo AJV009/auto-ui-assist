@@ -14,14 +14,14 @@ def agent_log(userid, sessionid, agent_name, model, conversation_array, response
     pass
 
 def fetch_agent_conversation_array(userid, sessionid, agent_name):
-    agent_conversation_array = f'temp_files/user-{userid}/session-{sessionid}/agent-{agent_name}-conversation_array.json'
+    agent_conversation_array = f'temp/user-{userid}/session-{sessionid}/agent-{agent_name}-conversation_array.json'
     if os.path.exists(agent_conversation_array):
         return json.load(open(agent_conversation_array)) 
     else:
         return None
 
 def store_agent_conversation_array(userid, sessionid, agent_name, conversation_array):
-    root_path = f'temp_files/user-{userid}/session-{sessionid}'
+    root_path = f'temp/user-{userid}/session-{sessionid}'
     os.makedirs(root_path, exist_ok=True)
     agent_conversation_array = f"{root_path}/agent-{agent_name}-conversation_array.json"
     existing_conversation_array = fetch_agent_conversation_array(userid, sessionid, agent_name)

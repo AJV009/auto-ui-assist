@@ -13,44 +13,58 @@ import json
 load_dotenv()
 
 user_session_uuid = str(uuid.uuid4())
+api_url = os.getenv("API_URL")
+os_apps = app_list(user_session_uuid)
 
 user_task = input("Enter your user_task: ")
 
-api_url = os.getenv("API_URL")
-stage_1_uri = f"{api_url}/plan_stage_1"
+task_corrector_uri = f"{api_url}/task_corrector"
+task_corrector_payload = {
+    "userid": get_userid(),
+    "sessionid": user_session_uuid,
+    "os": "windows",
+    "task": user_task,
+    "app_list": os_apps,
+}
+response = requests.post(task_corrector_uri, json=task_corrector_payload)
+response = json.loads(response.text)
+print(f"Corrected task: {response['corrected_task']}")
 
-os_apps = app_list(user_session_uuid)
-launch_app_list = []
+launch_app_list = response["launch_app_list"]
+print(f"Launch app list: {launch_app_list}")
 
-TASK_REFINEMENT_MAX_TRIES = int(os.getenv("TASK_REFINEMENT_MAX_TRIES", 3))
-refinement_tries = 0
-refinement_qa_str = ''
-while True:
-
-    if refinement_tries >= TASK_REFINEMENT_MAX_TRIES:
-        break
-
-    stage_1_data = {
+# check if "refinement" key in response
+if "refinement" in response:
+    # TASK_REFINEMENT_MAX_TRIES = int(os.getenv("TASK_REFINEMENT_MAX_TRIES", 3))
+    print("Refinement requested")
+    user_task = response["corrected_task"]
+    
+    # trigger refinement url at /task_refiner
+    task_refiner_uri = f"{api_url}/task_refiner"
+    task_refiner_payload = {
         "userid": get_userid(),
         "sessionid": user_session_uuid,
-        "task": user_task,
-        "app_list": os_apps,
         "os": "windows",
-        "refinement": refinement_qa_str
+        "task": user_task,
     }
-
-    response = requests.post(stage_1_uri, json=stage_1_data)
+    response = requests.post(task_refiner_uri, json=task_refiner_payload)
     response = json.loads(response.text)
-    stage_1_data["task"] = response['corrected_task']
-    launch_app_list = response['launch_app_list']
-    refinement_questions = response['refinement_questions']
-    if refinement_questions:
-        for question in refinement_questions:
-            answer = input(question + " ")
-            refinement_qa_str = f"\n\n{question}\n{answer}"
-        stage_1_data['refinement'] = refinement_qa_str
-        refinement_tries += 1
-    else:
-        break
-
-print(json.dumps(stage_1_data, indent=2))
+    print(f"Refined task: {response['refined_task']}")
+    print(f"Refinement questions: {response['refinement_questions']}")
+    qna_str = "Further refinement data:\n"
+    for question in response['refinement_questions']:
+        user_answer = input(f"{question}: ")
+        qna_str = qna_str + f"{question}: {user_answer}\n"
+    print("Refinement data collected: \n", qna_str)
+    
+    # trigger refinement url at /task_refiner_stage_2
+    task_refiner_stage_2_uri = f"{api_url}/task_refiner_stage_2"
+    task_refiner_stage_2_payload = {
+        "userid": get_userid(),
+        "sessionid": user_session_uuid,
+        "os": "windows",
+        "task": user_task + "\n" + qna_str,
+    }
+    response = requests.post(task_refiner_stage_2_uri, json=task_refiner_stage_2_payload)
+    response = json.loads(response.text)
+    print(f"Final refined task: {response['refined_task']}")
