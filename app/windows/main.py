@@ -77,9 +77,9 @@ capture_screenshot(screenshot_type="desktop", save_path="desktop_screenshot.png"
 # Capture app window screenshot
 capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", save_path="word_window_screenshot.png")
 # Capture app window screenshot with rectangle
-capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["Document"], output_format="rectangle", save_path="word_window_screenshot_with_rectangle.png")
+capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["document"], output_format="rectangle", save_path="word_window_screenshot_with_rectangle.png")
 # Capture app window screenshot with annotations
-capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["Document"], output_format="annotation", save_path="word_window_screenshot_with_annotations.png")
+capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["document"], output_format="annotation", save_path="word_window_screenshot_with_annotations.png")
 # Concatenate two screenshots
 capture_screenshot(screenshot_type="concat", concat_images=["word_window_screenshot.png", "desktop_screenshot.png"], save_path="concatenated_screenshot.png")
 # Convert an image to base64
