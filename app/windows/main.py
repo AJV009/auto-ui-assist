@@ -4,6 +4,7 @@ TODO: This is temp test code, will moved later depending on how we package the a
 '''
 import requests
 from utils.apps import app_list, launch_app
+from utils.screenshot import capture_screenshot
 from utils.user import get_userid
 import os
 from dotenv import load_dotenv
@@ -68,3 +69,19 @@ if "refinement" in response:
     response = requests.post(task_refiner_stage_2_uri, json=task_refiner_stage_2_payload)
     response = json.loads(response.text)
     print(f"Final refined task: {response['refined_task']}")
+
+# Screenshot test code
+
+# Capture desktop screenshot
+capture_screenshot(screenshot_type="desktop", save_path="desktop_screenshot.png")
+# Capture app window screenshot
+capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", save_path="word_window_screenshot.png")
+# Capture app window screenshot with rectangle
+capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["Document"], output_format="rectangle", save_path="word_window_screenshot_with_rectangle.png")
+# Capture app window screenshot with annotations
+capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", sub_control_titles=["Document"], output_format="annotation", save_path="word_window_screenshot_with_annotations.png")
+# Concatenate two screenshots
+capture_screenshot(screenshot_type="concat", concat_images=["word_window_screenshot.png", "desktop_screenshot.png"], save_path="concatenated_screenshot.png")
+# Convert an image to base64
+base64_string = capture_screenshot(screenshot_type="app_window", app_title=".*Word.*", output_format="base64")
+print("Base64 string of the screenshot: ", base64_string[:100] + "...")  # Print the first 100 characters
