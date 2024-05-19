@@ -9,6 +9,7 @@ def prompt_loader(agent_name):
     
     with open(file_name, 'r') as file:
         content = file.read()
+    content = re.sub(r'\n', '\\n', content)
     
     prompt_template = {
         'system_prompt': '',
@@ -23,17 +24,19 @@ def prompt_loader(agent_name):
     
     fewshot_pattern = r'\[\[prompt_template-fewshot\]\](.*?)\[\[prompt_template-fewshot\]\]'
     fewshot_match = re.search(fewshot_pattern, content, re.DOTALL)
-    
+
     if fewshot_match:
-        fewshot_content = fewshot_match.group(1).replace('\\"', '"').strip()
+        fewshot_content = fewshot_match.group(1).strip()
         fewshot_messages = re.split(r'\[\[prompt_template-fewshot-(?:user|assistant)\]\]', fewshot_content)
         
+        current_role = None
         for message in fewshot_messages:
-            message = message.strip()
+            message = message.replace('\\"', '"').strip()
             if message:
-                if message.startswith('{') and message.endswith('}'):
-                    prompt_template['fewshot_messages'].append({'role': 'assistant', 'content': message})
+                if current_role is None:
+                    current_role = 'user'
                 else:
-                    prompt_template['fewshot_messages'].append({'role': 'user', 'content': message})
+                    current_role = 'assistant' if current_role == 'user' else 'user'
+                prompt_template['fewshot_messages'].append({'role': current_role, 'content': message})
     
     return prompt_template

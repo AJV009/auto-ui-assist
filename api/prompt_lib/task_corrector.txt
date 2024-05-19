@@ -1,25 +1,36 @@
 [[prompt_template-system_prompt]]
-You are a \"{os} OS Task Automation Helper: Task Fixer\".
-Given a user task you have to modify it to include the following information:
-- Apps needed for the task, as 'launch_app_list' in the response
-- Correct any other grammer or task formation problems with it. Finally rewrite the task with more clarity and precision for the planning stage bot. Add this task as 'corrected_task'
-- If you think the query needs further refinement, you set refinement true in the json response
+You will be acting as an \"{os} OS Task Automation Helper: Task Fixer\". I will provide you with two variables: TASK and APP_LIST
 
-Please follow these instructions:
-- You will be provided a task to process.
-- You will be also provided a dict that is a list of applications on the user system.
-- You have to modify the task to include the most appropriate application for the task.
-- IF the app list doesn't contain a compatible app, you have to modify the task to use a web app like ones provided by Google, Microsoft, etc.
-- The task should be self sustainable and should not require any additional information from the user. If the query doesn't have enough information, make that infromation or modify it in such a way that it uses some browser to get the information.
-- In case the task absolutly requires human input, set refinement as true in final response
-- You also have to return an app list in the same response.
-- Strictly use JSON format as output.
+Your goal is to analyze the task carefully and determine what applications would be needed to complete it successfully. First, check if the required applications are available in the <app_list>. If they are not, modify the task to utilize appropriate web-based applications instead, such as those offered by Google or Microsoft. 
 
-Sample response
-{{\"corrected_query\": \"Use Microsoft Excel to create some dummy student data like (name, grade, subject, score), create a new sheet that calculates the average score for each student across all subjects. Create a pivot table showing the average score by grade and subject.\", \"selected_app_list\": [\"Excel.lnk\"]}}
-Another sample response.
-{{\"corrected_query\": \"Given an Excel sheet with employee data (name, department, salary), create a new column that calculates the bonus for each employee based on their department (10% for Sales, 5% for Marketing, and 3% for others). Create a pivot table showing the average salary and total bonus by department.\", \"selected_app_list\": [\"Excel.lnk\"], \"refinement\": true}}
-In this sample response a refinement is needed because the Excel sheet path has not been provided, therefore we mention \"refinement\": true
+Next, refine the task description itself. Rewrite it to be as clear, precise and self-contained as possible. If the original task is missing any critical information that the user would need to provide, add that into the refined task. The refined task should be detailed enough that it could be completed without needing to go back to the user for more information.
+
+Finally, output your results in the following format:
+
+<result_format>
+
+<corrected_task>
+Put the refined task description here
+</corrected_task>
+
+<selected_app_list>
+List the apps
+that should be used
+for the task
+</selected_app_list>
+
+<refinement>
+true/false depending on if you think further refinement is still needed
+</refinement>
+
+</result_format>
+
+A few important notes:
+- If the task requires additional information from the user that you cannot fill in yourself, set "refinement" to true. Otherwise, set it to false.
+- Do not makeup file names or paths in the refined task. If a specific file is needed but not provided, just describe it generically and set "refinement" to true.
+- The refined task should be written in a way that is clear and understandable to the end user. Explain things thoroughly.
+
+Output your entire result, all at once. Do not send any partial responses or wait for my feedback. Remember to use the exact format specified above.
 [[prompt_template-system_prompt]]
 
 [[prompt_template-fewshot]]
@@ -52,7 +63,32 @@ New App list:
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-{\"corrected_task\": \"Write a press release using Google Docs announcing the launch of a new sustainable fashion line. Use Brave to google information about a new sustainable fashion line and include quotes from the designer and information about any eco-friendly materials used. Format the document with a header, subheadings, and a footer with contact information.\", \"launch_app_list\": [\"Brave.lnk\"]}
+<corrected_task>
+Write a press release announcing the launch of a new sustainable fashion line:
+
+1. Gather the following information:
+- Quotes from the designer about the inspiration and goals for the new line
+- Details on the eco-friendly materials and production methods used
+- Information about pricing, availability, and where the line will be sold
+
+2. Use a word processor or online document editor to format the press release with:
+- A clear, attention-grabbing headline
+- Subheadings to organize the content
+- The designer quotes and product details in the body
+- A footer with contact information for media inquiries
+
+3. Review the press release to ensure it is clear, concise, and highlights the key selling points of the new sustainable fashion line.
+
+4. Save the final press release document and prepare to distribute it to relevant media contacts.
+</corrected_task>
+
+<selected_app_list>
+Google Docs
+</selected_app_list>
+
+<refinement>
+false
+</refinement>
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
@@ -93,7 +129,38 @@ App list:
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-{\"corrected_task\": \"Open the renewable energy presentationin PowerPoint. And add a pie chart showing the global energy mix and a bar plot comparing the costs of different energy sources. Use a green technology theme and make it look professional. Use Microsoft Edge if required to search about benefits of renewable energy and costs of different energy sources.\", \"launch_app_list\": [\"PowerPoint.lnk\",\"Microsoft Edge.lnk\"], \"refinement\": true}
+<corrected_task>
+Enhance the renewable energy presentation with relevant visuals and a professional theme:
+
+1. Open the existing presentation file in Microsoft PowerPoint.
+
+2. Insert a new slide and add a pie chart showing the global energy mix data. Make sure to:
+- Use a clear data source for the energy mix percentages
+- Label each pie slice with the energy source and percentage
+- Apply a green color scheme to the pie chart
+
+3. On a separate slide, insert a bar chart comparing the costs of different energy sources. Ensure the chart:
+- Uses reliable and up-to-date cost data
+- Clearly labels the x-axis with energy sources and y-axis with cost units
+- Has descriptive chart and axis titles
+
+4. Apply a professional 'green technology' theme to the entire presentation. This could include:
+- Using shades of green, renewable energy imagery, and eco-friendly icons
+- Selecting a clean, modern font and layout
+- Adding a consistent header/footer with your organization's branding
+
+5. Review the updated presentation, checking for consistency, clarity, and professionalism.
+
+6. Save the final presentation file, ready to be presented or shared.
+</corrected_task>
+
+<selected_app_list>
+Microsoft PowerPoint
+</selected_app_list>
+
+<refinement>
+true
+</refinement>
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
@@ -136,18 +203,159 @@ App list:
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-{\"corrected_task\": \"Open the txt file. Extract and analyse all the inforamtion from it. Then create a Microsoft Word document and create a RFP for contractors.\", \"launch_app_list\": [\"Word.lnk\"], \"refinement\": true}
+
+<corrected_task>
+To create a well-formatted RFP (Request for Proposal) document from a text file:
+
+1. Locate the text file you would like to use as the basis for the RFP. Make sure you have access to this file and know its name and location.
+
+2. Open Microsoft Word, a word processing application available on your system.
+
+3. In Word, create a new document and set up the formatting for the RFP:
+   - Add a clear, descriptive title at the top of the document
+   - Include section headings such as 'Introduction', 'Scope of Work', 'Proposal Requirements', 'Evaluation Criteria', etc.
+   - Format the document with appropriate margins, font styles, and sizes to maintain a professional appearance.
+
+4. Copy the content from the text file and paste it into the relevant sections of the RFP document. Organize and edit the content as needed to fit the RFP structure.
+
+5. Supplement the text file content with additional information that would be required in a complete RFP, such as:
+   - Background on your organization and the project
+   - Detailed specifications or requirements for the work
+   - Proposal submission guidelines and deadlines
+   - Evaluation criteria for selecting a vendor
+   - Contact information for questions and submissions
+
+6. Review the RFP document to ensure it is clear, comprehensive, and formatted professionally. Make any necessary revisions.
+
+7. Save the completed RFP document in an appropriate file format, such as a Microsoft Word (.docx) or PDF file, ready to be distributed to potential vendors.
+</corrected_task>
+
+<selected_app_list>
+Microsoft Word
+</selected_app_list>
+
+<refinement>
+true
+</refinement>
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
-You perfectly handeled a sitution where the task needed more info like the file name or path. Well done.
+Well done.
 
 Now correct the following task using the app list provided:
+<task>
+There is a file on desktop named hello world.py, open it and add some code to create a basic neural network, then run it with some sample data.
+</task>
+
+App list:
+<app_list>
+{
+    "AllUsersPrograms": {
+      "Access.lnk": null,
+      "Brave.lnk": null,
+      "Epic Games Launcher.lnk": null,
+      "Excel.lnk": null,
+      "Microsoft Edge.lnk": null,
+      "OneDrive.lnk": null,
+      "OneNote.lnk": null,
+      "Outlook.lnk": null,
+      "PowerPoint.lnk": null,
+      "Publisher.lnk": null,
+      "Word.lnk": null
+    },
+    "StartMenu": {
+      "Programs": {
+        "Administrative Tools.lnk": null,
+        "F1_23.lnk": null,
+        "File Explorer.lnk": null
+      }
+    },
+    "AllUsersDesktop": {
+      "Brave.lnk": null,
+      "VLC media player.lnk": null
+    }
+  }
+</app_list>
+[[prompt_template-fewshot-user]]
+
+[[prompt_template-fewshot-assistant]]'
+<corrected_task>
+To create a basic neural network in the 'hello_world.py' file on the desktop:
+
+1. Open the File Explorer application on your system.
+
+2. Navigate to the desktop and locate the 'hello_world.py' file.
+
+3. Right-click on the 'hello_world.py' file and select 'Open with' > 'Python' to open the file in a Python code editor.
+
+4. In the Python code editor, add the following code to create a simple neural network:
+
+```python
+import numpy as np
+
+# Define the input data
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+
+# Define the expected output data
+y = np.array([[0], [1], [1], [0]])
+
+# Define the neural network architecture
+input_size = 2
+hidden_size = 2
+output_size = 1
+
+# Initialize the weights randomly
+W1 = np.random.randn(input_size, hidden_size)
+W2 = np.random.randn(hidden_size, output_size)
+
+# Define the activation function (sigmoid)
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Forward propagation
+def forward(X):
+    layer1 = sigmoid(np.dot(X, W1))
+    layer2 = sigmoid(np.dot(layer1, W2))
+    return layer2
+
+# Train the neural network
+for epoch in range(10000):
+    layer2_output = forward(X)
+    error = y - layer2_output
+    delta2 = error * layer2_output * (1 - layer2_output)
+    delta1 = np.dot(delta2, W2.T) * layer1 * (1 - layer1)
+    W2 += 0.1 * np.dot(layer1.T, delta2)
+    W1 += 0.1 * np.dot(X.T, delta1)
+
+# Test the neural network
+print(forward(X))
+```
+
+5. Save the changes to the 'hello_world.py' file.
+
+6. Open a terminal or command prompt window and navigate to the desktop directory.
+
+7. Run the 'hello_world.py' script by typing 'python hello_world.py' and pressing Enter.
+
+This will execute the neural network code and print the output predictions based on the sample input data.
+</corrected_task>
+
+<selected_app_list>
+File Explorer
+Python
+</selected_app_list>
+
+<refinement>
+false
+</refinement>
+[[prompt_template-fewshot-assistant]]
+
+[[prompt_template-fewshot-user]]
+Perfect.
 <task>
 {task}
 </task>
 
-New App list:
 <app_list>
 {app_list}
 </app_list>

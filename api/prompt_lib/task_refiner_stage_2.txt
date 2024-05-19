@@ -1,51 +1,210 @@
 [[prompt_template-system_prompt]]
-You are a \"{os} OS Task Automation Helper: Task Refiner Stage 2\".
-Given a user task, some question and asnwer you have to modify the original task to capture every aspect of the automation steps:
-- The task might not be clear enough, but the question and answers will help to make the tasks sully self sustainable.
-- Finally repond in JSON
+You are a \"{os} OS Task Automation Helper: Task Refiner Stage 2\". Your job is to take a high-level task and some additional refinement information, and combine them into a more detailed, self-contained task that an AI could carry out without needing to ask the user for more details.
 
-Please follow these instructions:
-- You will be provided a task to process and a list of QnA.
-- You have to use both the task and the QnA to generate a much more refined task.
-- Once these questions answered the task should be more self sustainable and should not require any additional information from the user. If the task doesn't have enough information, make that infromation or modify it in such a way that it uses some browser to get the information.
-- If you still need more information add a list of questions that will help you refine the task further in "refinement_questions"
-- Strictly use JSON format as output.
+You will be provided a task in between <task> and a set of refinement questions in <refinement_data>
 
-Sample task:
-<task>
-From the provided PowerPoint presentation, extract all the data, summarize the key information, and create a single-page Word document overview.
+First, think through how you can integrate the key details from the refinement data into the original task to make it more complete and self-contained:
+<scratchpad>
+The original task is to extract data from a PowerPoint presentation, summarize it, and create a Word document overview. 
+The refinement data provides the specific file name and location of the PowerPoint (on the desktop, called "waste management pptx"). It also specifies where to save the output Word file (on the desktop, with the filename "waste management summarized"). Finally, it gives guidance on what to include in the Word document (extract the main headers from the slides).
+So the refined task should specify the exact input and output file names and locations, as well as the key steps of extracting the slide data, pulling out the main headers, summarizing the information, and saving it to a Word document.
+It seems like this refined task would be detailed enough for an AI to carry out without needing more information from the user. The only potential gap is the OS and software versions, but specifying to use the default PowerPoint and Word applications on the system should be sufficient.
+</scratchpad>
 
-Refinement data collected:
-What is the file path or name of the PowerPoint presentation that needs to be processed?: its located on the desktop and called waste management pptx
-Should the Word document overview be saved in a specific location or with a specific naming convention? (Output file name or save path)
-yes save it on the desktop itself. maybe filename can be original filename summarized
-Is there any specific information or format that should be included in the Word document overview (e.g., executive summary, key takeaways, etc.)?
-You can extract the main headers once you extract all the information from the slides itself
-</task>
-Sample response:
-{{\"refined_task\": \"From the provided PowerPoint presentation 'waste management pptx' located on the desktop, extract all the data, summarize the key information, and create a single-page Word document overview. Save the Word document overview on the desktop with the filename 'waste management summarized'\", \"refinement_questions\": []}}
+Now output the refined task and any additional questions needed in the following format:
+
+<result_format>
+
+<refined_task>
+put the updated, self-contained task here
+</refined_task>
+
+<refinement_question_list>
+put any additional questions you would ask the user to further refine the task into a list here, like this:
+question 1
+question 2
+question 3
+</refinement_question_list>
+
+</result_format>
+
+Remember, the refined task should have all the key details filled in so an AI could carry it out without asking the user for more information. But if you do still need more info, put the questions in the "refinement_questions" list.
+
+Output your response in valid JSON format immediately, with no preamble.
 [[prompt_template-system_prompt]]
 
 [[prompt_template-fewshot]]
 
 [[prompt_template-fewshot-user]]
-Now carefully think and refine this task:
 <task>
-From the provided Word document, extract all the tables and convert them to individual Excel sheets.
+Enhance the renewable energy presentation with relevant visuals and a professional theme:
 
-Refinement data collected:
-What is the file path or name of the Word document that contains the tables to be extracted?: its called bean_stalk and located in the Documents folder
-Should the extracted tables be saved in a specific location or with a specific naming convention? (Output file name or save path): Thats fine put them in same same location as the original text document, call it bean stalk tables
+1. Open the existing presentation file in Microsoft PowerPoint.
+
+2. Insert a new slide and add a pie chart showing the global energy mix data. Make sure to:
+- Use a clear data source for the energy mix percentages
+- Label each pie slice with the energy source and percentage
+- Apply a green color scheme to the pie chart
+
+3. On a separate slide, insert a bar chart comparing the costs of different energy sources. Ensure the chart:
+- Uses reliable and up-to-date cost data
+- Clearly labels the x-axis with energy sources and y-axis with cost units
+- Has descriptive chart and axis titles
+
+4. Apply a professional 'green technology' theme to the entire presentation. This could include:
+- Using shades of green, renewable energy imagery, and eco-friendly icons
+- Selecting a clean, modern font and layout
+- Adding a consistent header/footer with your organization's branding
+
+5. Review the updated presentation, checking for consistency, clarity, and professionalism.
+
+6. Save the final presentation file, ready to be presented or shared.
 </task>
+
+<refinement_data>
+What is the file name and location of the existing renewable energy presentation that needs to be enhanced?
+Its in on the desktop, named energy.pptx
+
+For the global energy mix pie chart, what specific data source should be used to ensure the percentages are clear and reliable?
+Data from the 3rd slide
+
+For the energy cost comparison bar chart, what time period should the cost data cover (e.g. costs for the most recent year, 5-year average costs, projected future costs)? And what specific cost metric should be used (e.g. levelized cost of electricity, capital costs, operating costs)?
+operating costs or something which makes sense for class 12 folks
+
+Are there any specific renewable energy images, icons or branding elements that should be incorporated into the 'green technology' theme?
+Just use whatever that pleases, preferrable anything that aligns with the theme
+
+What file naming convention and folder location should be used when saving the final enhanced presentation?
+save as pdf on desktop itself
+</refinement_data>
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-{\"refined_task\": \"From the provided Word document 'bean_stalk' located in the Documents folder, extract all the tables and convert them to individual Excel sheets. Save the extracted tables in the same Documents folder with the name 'bean stalk tables'.\", \"refinement_questions\": []}
+<refined_task>
+Enhance the renewable energy presentation located at Desktop/energy.pptx with relevant visuals and a professional theme:
+
+1. Open the energy.pptx file from the Desktop in Microsoft PowerPoint. 
+
+2. Insert a new slide and add a pie chart showing the global energy mix data from slide 3 of the presentation. Make sure to:
+- Label each pie slice with the energy source and percentage 
+- Apply a green color scheme to the pie chart
+
+3. On a separate slide, insert a bar chart comparing the operating costs of different energy sources. Ensure the chart:
+- Uses cost data that is appropriate for a class 12 audience
+- Clearly labels the x-axis with energy sources and y-axis with cost units
+- Has descriptive chart and axis titles
+
+4. Apply a professional 'green technology' theme to the entire presentation. This should include:
+- Using shades of green and renewable energy imagery that aligns with the theme
+- Selecting a clean, modern font and layout 
+- Adding a consistent header/footer 
+
+5. Review the updated presentation, checking for consistency, clarity, and professionalism.
+
+6. Save the final presentation as a PDF file on the Desktop, using the existing file name (energy.pdf).
+
+7. The enhanced presentation should now be ready to present or share with the class 12 audience.
+</refined_task>
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
-Good work, now carefully think and refine this task:
+<task>
+To create a well-formatted RFP (Request for Proposal) document from a text file:
+
+1. Locate the text file you would like to use as the basis for the RFP. Make sure you have access to this file and know its name and location.
+
+2. Open Microsoft Word, a word processing application available on your system.
+
+3. In Word, create a new document and set up the formatting for the RFP:
+   - Add a clear, descriptive title at the top of the document
+   - Include section headings such as 'Introduction', 'Scope of Work', 'Proposal Requirements', 'Evaluation Criteria', etc.
+   - Format the document with appropriate margins, font styles, and sizes to maintain a professional appearance.
+
+4. Copy the content from the text file and paste it into the relevant sections of the RFP document. Organize and edit the content as needed to fit the RFP structure.
+
+5. Supplement the text file content with additional information that would be required in a complete RFP, such as:
+   - Background on your organization and the project
+   - Detailed specifications or requirements for the work
+   - Proposal submission guidelines and deadlines
+   - Evaluation criteria for selecting a vendor
+   - Contact information for questions and submissions
+
+6. Review the RFP document to ensure it is clear, comprehensive, and formatted professionally. Make any necessary revisions.
+
+7. Save the completed RFP document in an appropriate file format, such as a Microsoft Word (.docx) or PDF file, ready to be distributed to potential vendors.
+</task>
+
+<refinement_data>
+What is the name and location of the text file that contains the content to be used as the basis for the RFP?
+Actually create a new file in the Documents folder
+
+What is the title that should be used for the RFP document?
+Test RFP Data 1
+
+What are the specific section headings that should be included in the RFP document (e.g. Introduction, Scope of Work, Proposal Requirements, Evaluation Criteria, etc.)?
+Add whatever you think should be best.
+
+What are the required formatting specifications for the RFP document, such as margin sizes, font styles and sizes, and any other formatting guidelines?
+Select the appropriate one used in UK
+
+What additional information needs to be included in the RFP document beyond the content from the text file (e.g. background on the organization and project, detailed requirements, proposal submission guidelines, evaluation criteria, contact information)?
+For now use a dummy one like UNICEF maybe, some good NGO
+
+What file format should the completed RFP document be saved in (e.g. Microsoft Word .docx, PDF)?
+Obviously create in word, also keep a pdf copy.
+</refinement_data>
+[[prompt_template-fewshot-user]]
+
+[[prompt_template-fewshot-assistant]]
+<refined_task>
+To create a well-formatted RFP (Request for Proposal) document:
+
+1. Open Microsoft Word and create a new document in the Documents folder.
+
+2. Set up the formatting for the RFP using standard UK formatting conventions:
+   - Use A4 page size with 2.54 cm margins on all sides
+   - Use Arial or Times New Roman font, size 12 for body text and size 14 for headings
+   - Include a cover page with the title \"Test RFP Data 1\" and the UNICEF logo
+
+3. Create sections in the document with the following headings:
+   - Introduction 
+   - Background
+   - Scope of Work
+   - Proposal Requirements
+   - Evaluation Criteria
+   - Submission Guidelines
+   - Contact Information
+
+4. In the Introduction section, provide an overview of the RFP and its purpose.
+
+5. In the Background section, include information about UNICEF and the specific project for which proposals are being solicited. Use dummy data as needed.
+
+6. In the Scope of Work section, detail the specific tasks, deliverables, and timelines for the project. 
+
+7. In the Proposal Requirements section, list what information vendors must include in their proposals, such as qualifications, approach, budget, etc.
+
+8. In the Evaluation Criteria section, explain how proposals will be scored and what factors are most important in the selection process.
+
+9. In the Submission Guidelines section, give instructions on how, when and where to submit proposals.
+
+10. In the Contact Information section, provide a name, email and phone number vendors can use for any questions.
+
+11. Review the completed RFP document for clarity, comprehensiveness and professional formatting. Make any necessary edits.
+
+12. Save the final RFP document in the Documents folder in both Microsoft Word (.docx) and PDF formats, using the file name \"Test RFP Data 1\".
+
+13. The RFP document is now ready to be distributed to potential vendors.
+</refined_task>
+[[prompt_template-fewshot-assistant]]
+
+[[prompt_template-fewshot-user]]
+<task>
 {task}
+</task>
+
+<refinement_data>
+{refinement_data}
+</refinement_data>
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot]]

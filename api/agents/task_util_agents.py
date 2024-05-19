@@ -1,8 +1,16 @@
 import json
+import re
 
 from utils.trace import store_agent_conversation_array
 from utils.prompt import prompt_loader
 from utils.model import model_loader
+from utils.response import xmlResponseToDict
+
+def multiline_string_handler(obj):
+    for key, value in obj.items():
+        if isinstance(value, str) and '\n' in value:
+            obj[key] = re.sub(r'\\n', '\n', value)
+    return obj
 
 def execute_agent(userid, sessionid, agent_name, system_prompt_params, fewshot_params, provider, model):
     """
@@ -29,5 +37,5 @@ def execute_agent(userid, sessionid, agent_name, system_prompt_params, fewshot_p
       conversation_array=message_array
     )
 
-    response_dict = json.loads(response_content)
+    response_dict = xmlResponseToDict(response_content)
     return response_dict
