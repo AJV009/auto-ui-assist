@@ -191,7 +191,15 @@ def execute_action(action: Dict[str, Any]):
             raise Exception(f"Unknown parameters: {parameters}")
 
     elif action_type == "PRESS":
-        if "key" in parameters:
+        if "keys" in parameters:
+            keys = parameters["keys"]
+            if not isinstance(keys, list):
+                raise Exception("Keys must be a list of keys")
+            for key in keys:
+                if key.lower() not in KEYBOARD_KEYS:
+                    raise Exception(f"Key must be one of {KEYBOARD_KEYS}")
+            pyautogui.press(keys, interval=0.5)
+        elif "key" in parameters:
             key = parameters["key"]
             if key.lower() not in KEYBOARD_KEYS:
                 raise Exception(f"Key must be one of {KEYBOARD_KEYS}")

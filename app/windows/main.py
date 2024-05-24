@@ -8,13 +8,29 @@ import uuid
 import json
 
 from dotenv import load_dotenv
+load_dotenv()
 
 from utils.apps import app_list, launch_app
 from utils.screenshot import capture_screenshot
 from utils.user import get_userid
 from utils.common import get_temp_path, get_temp_session_path
 
-load_dotenv()
+# temperory code for excel
+from utils.tooling import sample_prompt, keyboard_mouse, xmlResponseToDict
+from utils.control import execute_action
+import base64
+import time
+
+def encode_image(image_path):
+  with open(image_path, "rb") as image_file:
+    return base64.b64encode(image_file.read()).decode('utf-8')
+
+headers = {
+  "Content-Type": "application/json",
+  "Authorization": f"Bearer {os.getenv("OPENAI_API_KEY")}"
+}
+
+
 
 # App name
 app_name = "autoUIAssist"
@@ -115,8 +131,11 @@ response = requests.post(task_step_summarization_uri, json=task_step_summarizati
 response = json.loads(response.text)
 print(f"Task summary: {response['summary']}")
 
+with open(f"logs/response.json", "w") as f:
+    json.dump(response, f, indent=4)
+
 # [[IMP]] Task summary, scratchpad
-task_summary = response["task_summary"]
+task_summary = response["summary"]
 task_scratchpad = response["scratchpad"]
 
 screenshot_list = []
@@ -132,6 +151,124 @@ for step in step_list:
         app_title="Excel",
         temp_session_step_path=temp_session_step_path
     )
-    # compile: current step + task summary + current screenshot + current-1 screenshot, all agents and tools data -> gpt-4o EXPENSIVE
-    # genereate execution step
+    # compile: current step + task summary + current screenshot + current-1 screenshot, all agents and tools data -> gpt-4o ::: EXPENSIVE
+    the_prompt = sample_prompt.format(
+        TASK_SUMMARY=task_summary,
+        CURRENT_STEP=step_list[step_id],
+        TOOLING_AVAILABLE=keyboard_mouse,
+    )
+    step_id += 1
+    base64_image = encode_image(app_window_ann_screenshot_path)
+    payload = {
+        "model": "gpt-4o",
+        "temperature": 0,
+        "messages": [
+            {
+            "role": "user",
+            "content": [
+                {
+                "type": "text",
+                "text": the_prompt
+                },
+                {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}"
+                }
+                }
+            ]
+            }
+        ]
+    }
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    print(response.json())
+
+    # save to a file for inspection
+    full_response = response.json()
+    full_response["prompt"] = the_prompt
+    with open(f"logs/response_{step_id}.json", "w") as f:
+        json.dump(full_response, f, indent=4)
     
+    content = response.json()["choices"][0]["message"]["content"]
+    if len(content) <= 10:
+        print("No action detected")
+        continue
+
+    action_dict = xmlResponseToDict(response.json()["choices"][0]["message"]["content"])
+    # pretty print action_dict to a file and save it for inspection
+    with open(f"logs/action_dict_{step_id}.json", "w") as f:
+        json.dump(action_dict, f, indent=4)
+
+    # if action_dict is empty, continue to next step
+    if action_dict['step_list'] == []:
+        continue
+
+    def process_actions(step_list):
+        action_list = []
+        step_list = step_list['step_list']
+        for step in step_list:
+            step_name, step_details = list(step.items())[0]
+            # manually set the variables for now, the key is step_name and value is step_details
+            action_details = step_details.split("\n")
+            
+            action = {}
+            for detail in action_details:
+                detail.replace("\"", "")
+                print(detail)
+                if ":" in detail:
+                    key, value = detail.split(":", 1)
+                    key = key.strip().strip('"')
+                    value = value.strip().strip('"')
+                    
+                    if key == "action_type":
+                        action[key] = value
+                    elif key == "parameters":
+                        parameters = json.loads(value)
+                        action[key] = parameters
+                    elif key == "text":
+                        action["action_type"] = "PRESS"
+                        key = "keys"
+                        # convert text to list of characters
+                        action.setdefault("parameters", {})[key] = list(json.loads(value)[0])
+                    elif key == "keys":
+                        action["action_type"] = "PRESS"
+                        action.setdefault("parameters", {})[key] = json.loads(value)
+
+            action_list.append(action)
+        return action_list
+    action_list = process_actions(action_dict)
+    
+    for action in action_list:
+        print(action)
+        
+        
+
+    # verify the action list
+    # loop through the action list and execute each action
+    # check the output of each action worked, if not alter the action action and re-run, for maximum of 3 times
+
+            # print(f"Executing step: {step_name}")
+            # print(action)
+            # execute_action(action)
+            # # add a layer to check the step output
+            # screenshot = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
+            # screenshot = encode_image(screenshot)
+            # payload["messages"].append({
+            #     "role": "user",
+            #     "content": [
+            #         {
+            #             "type": "text",
+            #             "text": f"Ran the ste: {step_name}\n And the output is as attached in the image below. Would you like to generate modify the next step? If yes just return a list of modified step list and I will execute it."
+            #         },
+            #         {
+            #             "type": "image_url",
+            #             "image_url": {
+            #                 "url": f"data:image/jpeg;base64,{screenshot}"
+            #             }
+            #         }
+            #     ]
+            # })
+    
+    
+    time.sleep(0.5)
+    # genereate execution step

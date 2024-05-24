@@ -4,7 +4,7 @@ import os
 from io import BytesIO
 from typing import Dict, List, Optional, Tuple, Union
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageGrab
 from pywinauto import Application
 from pywinauto.controls.uiawrapper import UIAWrapper
 from pywinauto.win32structures import RECT
@@ -118,8 +118,9 @@ def capture_screenshot(
     def application_screenshot():
         if not app_title:
             raise ValueError("app_title must be provided for app_window screenshot type.")
-        app = Application(backend="uia").connect(title_re="(?i)" + app_title)
-        window = app.window(title_re="(?i)" + app_title)
+
+        app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
+        window = app.window(title_re=".*" + app_title + ".*")
         control = window.wrapper_object()
 
         if sub_control_titles:
@@ -144,6 +145,8 @@ def capture_screenshot(
         if not concat_images or len(concat_images) != 2:
             raise ValueError("concat_images must be a list of two image paths for concat screenshot type.")
         screenshot = concat_screenshots(concat_images[0], concat_images[1])
+    elif screenshot_type == "screen":
+        screenshot = ImageGrab.grab()
     else:
         raise ValueError("Invalid screenshot type")
 
