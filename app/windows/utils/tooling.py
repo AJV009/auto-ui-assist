@@ -417,10 +417,15 @@ Important sidenote:
 - in most cases excel file will be already open for you, so you don't have to worry about opening it. return an emtpy list if its anything outside of the excel file or application.
 - Your focus is mostly on manipulating that excel data in the best possible way without any execution errors as such.
 - Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
+- If you find any long text like words with more than 6 letters, Find an alternate best word that can be used to replace it.
 """
 
 verify_prompt = """
 You will be verifying whether a specific action was successfully performed based on a pair of before and after images. The images will be concatenated side-by-side, with the "before" image on the left and the "after" image on the right.
+
+Note: 
+- In certain case the text in a particular cell might be slight different because we tried to make it smaller or more readable. So don't worry about the text in the cells, just focus on the structure and the UI elements. As long as some text in a partular mentioned coloumn is there and is somehow related to the expected text, it should be considered as correct.
+- Sometimes a certain action is all about the movement, so you only need to verify if the cell selector has moved from its original or previous state or place. In other times the action is about the content, so you need to verify if the content has changed or not.
 
 I have attached the before and after image. (left side is the before and right side is the after)
 
@@ -520,7 +525,8 @@ Important sidenote:
 - You cannot jump to a certain cell, you have to navigate to it using arrow keys. So the keys should always be one of available keyboard keys.
 - in most cases excel will be already open for you, so you don't have to worry about opening it. return an emtpy list if its anything outside of the excel file or application.
 - Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
-- Expand cells or increase the cell width if needed to make the content visible.
+- "keys" for individual keyboard keys, "text" for typing text
+- DO NOT CREATE steps to execute the new action or the next action, only realign or prepare the UI for the next action to be executed by another agent.
 """
 
 import re

@@ -138,6 +138,10 @@ with open(f"logs/response.json", "w") as f:
 task_summary = response["summary"]
 task_scratchpad = response["scratchpad"]
 
+for file in os.listdir("logs"):
+    if file.endswith(".json"):
+        os.remove(os.path.join("logs", file))
+
 screenshot_list = []
 
 step_id = 0

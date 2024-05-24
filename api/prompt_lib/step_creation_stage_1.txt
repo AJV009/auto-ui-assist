@@ -476,7 +476,6 @@ Draft a brief pitch email to send to each contact, with the press release attach
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
-please skip any launching of application step, from now on the required application will already be open for you to work on.
 <task>
 {task}
 </task>
