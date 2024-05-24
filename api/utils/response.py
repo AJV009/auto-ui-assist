@@ -28,7 +28,17 @@ def xmlResponseToDict(xml_response):
                     items = [item.strip() for item in items if item.strip()]
                     return {tag_name: items}
             else:
-                return {tag_name: tag_value}
+                # Recursively parse nested tags
+                nested_tags = re.findall(r'<(\w+)>(.*?)</\1>', tag_value, re.DOTALL)
+                if nested_tags:
+                    parsed_nested_tags = {}
+                    for nested_tag_name, nested_tag_content in nested_tags:
+                        parsed_nested_tag = parse_tag(f'<{nested_tag_name}>{nested_tag_content}</{nested_tag_name}>')
+                        if parsed_nested_tag:
+                            parsed_nested_tags.update(parsed_nested_tag)
+                    return {tag_name: parsed_nested_tags}
+                else:
+                    return {tag_name: tag_value}
         
         return None
 

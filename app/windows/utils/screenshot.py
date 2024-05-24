@@ -77,6 +77,9 @@ def capture_screenshot(
         return screenshot
 
     def concat_screenshots(image1_path: str, image2_path: str) -> Image.Image:
+        image1_path = image1_path[0]
+        image2_path = image2_path[0]
+        print("image2_path: ", image2_path)
         image1 = Image.open(image1_path)
         image2 = Image.open(image2_path)
         min_height = min(image1.height, image2.height)

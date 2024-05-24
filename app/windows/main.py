@@ -16,7 +16,7 @@ from utils.user import get_userid
 from utils.common import get_temp_path, get_temp_session_path
 
 # temperory code for excel
-from utils.tooling import sample_prompt, keyboard_mouse, xmlResponseToDict
+from utils.tooling import sample_prompt, keyboard_mouse, xmlResponseToDict, verify_prompt, correction_prompt
 from utils.control import execute_action
 import base64
 import time
@@ -27,7 +27,7 @@ def encode_image(image_path):
 
 headers = {
   "Content-Type": "application/json",
-  "Authorization": f"Bearer {os.getenv("OPENAI_API_KEY")}"
+  "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
 }
 
 
@@ -189,12 +189,12 @@ for step in step_list:
     with open(f"logs/response_{step_id}.json", "w") as f:
         json.dump(full_response, f, indent=4)
     
-    content = response.json()["choices"][0]["message"]["content"]
+    content = full_response["choices"][0]["message"]["content"]
     if len(content) <= 10:
         print("No action detected")
         continue
 
-    action_dict = xmlResponseToDict(response.json()["choices"][0]["message"]["content"])
+    action_dict = xmlResponseToDict(content)
     # pretty print action_dict to a file and save it for inspection
     with open(f"logs/action_dict_{step_id}.json", "w") as f:
         json.dump(action_dict, f, indent=4)
@@ -206,69 +206,121 @@ for step in step_list:
     def process_actions(step_list):
         action_list = []
         step_list = step_list['step_list']
+        step_id = 1
         for step in step_list:
-            step_name, step_details = list(step.items())[0]
-            # manually set the variables for now, the key is step_name and value is step_details
-            action_details = step_details.split("\n")
-            
-            action = {}
-            for detail in action_details:
-                detail.replace("\"", "")
-                print(detail)
-                if ":" in detail:
-                    key, value = detail.split(":", 1)
-                    key = key.strip().strip('"')
-                    value = value.strip().strip('"')
-                    
-                    if key == "action_type":
-                        action[key] = value
-                    elif key == "parameters":
-                        parameters = json.loads(value)
-                        action[key] = parameters
-                    elif key == "text":
-                        action["action_type"] = "PRESS"
-                        key = "keys"
-                        # convert text to list of characters
-                        action.setdefault("parameters", {})[key] = list(json.loads(value)[0])
-                    elif key == "keys":
-                        action["action_type"] = "PRESS"
-                        action.setdefault("parameters", {})[key] = json.loads(value)
-
-            action_list.append(action)
+            action_obj = step[f'step_{step_id}']
+            if "text_list" in action_obj["parameters"]:
+                action_obj["parameters"]["keys"] = list(action_obj["parameters"]["text_list"][0])
+                del action_obj["parameters"]["text_list"]
+            elif "key_list" in action_obj["parameters"]:
+                action_obj["parameters"]["keys"] = action_obj["parameters"]["key_list"]
+                del action_obj["parameters"]["key_list"]
+            action_list.append(action_obj)
+            step_id += 1
         return action_list
     action_list = process_actions(action_dict)
-    
+
+    action_id = 0
     for action in action_list:
         print(action)
-        
-        
+        screenshot_before_action = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
+        execute_action(action)
+        screenshot_after_action = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
+        # combine the two screenshots
+        action_screenshot = capture_screenshot(screenshot_type="concat", concat_images=[screenshot_before_action, screenshot_after_action], temp_session_step_path=temp_session_step_path)
+        print("action_screenshot: ", action_screenshot)
+        action_screenshot = encode_image(action_screenshot[0])
+        # verify the action worked
+        the_prompt = verify_prompt.format(ACTION=json.dumps(action))
+        payload = {
+            "model": "gpt-4o",
+            "temperature": 0,
+            "messages": [
+                {
+                "role": "user",
+                "content": [
+                    {
+                    "type": "text",
+                    "text": the_prompt
+                    },
+                    {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{action_screenshot}"
+                    }
+                    }
+                ]
+                }
+            ]
+        }
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+        print(response.json())
 
-    # verify the action list
-    # loop through the action list and execute each action
-    # check the output of each action worked, if not alter the action action and re-run, for maximum of 3 times
+        # save to a file for inspection
+        full_response = response.json()
+        with open(f"logs/response_{step_id}_verify.json", "w") as f:
+            json.dump(full_response, f, indent=4)
+        
+        content = response.json()["choices"][0]["message"]["content"]
+        
+        if "true" in content.lower():
+            print("Action verified")
+            action_id += 1
+            continue
+        elif "false" in content.lower():
+            print("Action not verified")
+            old_action = action
+            if action_id+1 < len(action_list):
+                new_action = action_list[action_id+1]
+            else:
+                new_action = "no new action left"
+            the_prompt = correction_prompt.format(
+                TOOLING=keyboard_mouse,
+                PERFORMED_ACTION=json.dumps(old_action),
+                PREPARE_FOR_ACTION=json.dumps(new_action)
+            )
+            payload = {
+                "model": "gpt-4o",
+                "temperature": 0,
+                "messages": [
+                    {
+                    "role": "user",
+                    "content": [
+                        {
+                        "type": "text",
+                        "text": the_prompt
+                        },
+                        {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{action_screenshot}"
+                        }
+                        }
+                    ]
+                    }
+                ]
+            }
+            response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+            print(response.json())
+            full_response = response.json()
+            full_response["prompt"] = the_prompt
+            with open(f"logs/response_{step_id}_correction.json", "w") as f:
+                json.dump(full_response, f, indent=4)
+            
+            content = response.json()["choices"][0]["message"]["content"]
+            if len(content) <= 10:
+                print("No action detected")
+                continue
 
-            # print(f"Executing step: {step_name}")
-            # print(action)
-            # execute_action(action)
-            # # add a layer to check the step output
-            # screenshot = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
-            # screenshot = encode_image(screenshot)
-            # payload["messages"].append({
-            #     "role": "user",
-            #     "content": [
-            #         {
-            #             "type": "text",
-            #             "text": f"Ran the ste: {step_name}\n And the output is as attached in the image below. Would you like to generate modify the next step? If yes just return a list of modified step list and I will execute it."
-            #         },
-            #         {
-            #             "type": "image_url",
-            #             "image_url": {
-            #                 "url": f"data:image/jpeg;base64,{screenshot}"
-            #             }
-            #         }
-            #     ]
-            # })
-    
-    
-    time.sleep(0.5)
-    # genereate execution step
+            correction_action_dict = xmlResponseToDict(content)
+            # pretty print action_dict to a file and save it for inspection
+            with open(f"logs/action_dict_{step_id}_correction.json", "w") as f:
+                json.dump(action_dict, f, indent=4)
+                
+            correction_action_list = process_actions(correction_action_dict)
+            correction_action_id = 0
+            for correction_action in correction_action_list:
+                print(correction_action)
+                execute_action(correction_action)
+
+    time.sleep(0.2)

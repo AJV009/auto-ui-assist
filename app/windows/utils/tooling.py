@@ -21,14 +21,15 @@ SUPPORTED_KEYBOARD_KEYS = [
     '\\t', '\\n', '\\r', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', 
     '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 
-    'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 'alt', 'altleft', 'altright', 
-    'backspace', 'capslock', 'ctrl', 'ctrlleft', 'ctrlright', 'decimal', 'del', 'delete', 'divide', 
-    'down', 'end', 'enter', 'esc', 'escape', 'f1', 'f10', 'f11', 'f12', 'f2', 'f3', 'f4', 'f5', 'f6', 
-    'f7', 'f8', 'f9', 'help', 'home', 'insert', 'left', 'multiply', 'num0', 'num1', 'num2', 'num3', 
-    'num4', 'num5', 'num6', 'num7', 'num8', 'num9', 'numlock', 'pagedown', 'pageup', 'pause', 'pgdn', 
-    'pgup', 'printscreen', 'prtsc', 'prtscr', 'return', 'right', 'scrolllock', 'shift', 'shiftleft', 
-    'shiftright', 'tab', 'volumedown', 'volumemute', 'volumeup', 'win', 'winleft', 'winright',
-    'down', 'left', 'right', 'up'
+    'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+    'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~',
+    'alt', 'altleft', 'altright', 'backspace', 'capslock', 'ctrl', 'ctrlleft', 'ctrlright', 'decimal', 
+    'del', 'delete', 'divide', 'down', 'end', 'enter', 'esc', 'escape', 'f1', 'f10', 'f11', 'f12', 
+    'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'help', 'home', 'insert', 'left', 'multiply', 
+    'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9', 'numlock', 
+    'pagedown', 'pageup', 'pause', 'pgdn', 'pgup', 'printscreen', 'prtsc', 'prtscr', 'return', 
+    'right', 'scrolllock', 'shift', 'shiftleft', 'shiftright', 'space', 'tab', 'volumedown', 
+    'volumemute', 'volumeup', 'win', 'winleft', 'winright', 'down', 'left', 'right', 'up'
 ]
 
 # Keyboard shortcuts in Excel
@@ -272,19 +273,19 @@ ACTION_SPACE = [
 sample_prompt = """
 Here is the task summary:
 <task_summary>
-{{TASK_SUMMARY}}
+{TASK_SUMMARY}
 </task_summary>
 
 The current step in the task is:  
 <current_step>
-{{CURRENT_STEP}}
+{CURRENT_STEP}
 </current_step>
 
 Current view of the application attached as an image.
 
 And here are the tools/actions you have available to use:
 <tooling_available>
-{{TOOLING_AVAILABLE}}
+{TOOLING_AVAILABLE}
 </tooling_available>
 
 Carefully analyze the current step in the context of the overall task objective from the task summary. Examine the current view to determine what specific actions need to be taken to complete this step. Consider how the available tooling can be used to perform those required actions.
@@ -294,60 +295,232 @@ Break down the current step into the necessary sub-steps and actions needed to a
 DO proper navigation to required cells based on the current screenshot provided, you might be required to add additional sub-steps for navigation alone.
 RETURN nothing, leave empty response, if the screenshot looks good and no action is required to acheive the current step. Make your best judgement call based on all the information provided. be smart!
 ONLY provide info when there needs to be an action taken.
+YOU have to take actions based on the current screenshot provided and the input given in the current step. What the current step says should be done in the screenshot. or visible to be already done.
 ONLY use keyboard for navigation and actions.
+
+another note: "keys" for individual keyboard keys, "text" for typing text
 </scratchpad>
 
 Translate your sub-step plan into a <step_list> with each sub-step enclosed in <step_#> tags containing "action_desc", "action_type", and "parameters" fields, like this example:
 
 Following is an example:
 <step_list>
-<step_1>
-"action_desc": "Enter info in the first cell"
-"action_type": "PRESS"
-"text": ["name"]
-</step_1>
+    <step_1>
+        <action_desc>
+            Enter info in the first cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                name
+            </text_list>
+        </parameters>
+    </step_1>
 
-<step_2>
-"action_desc": "Move to the right column"
-"action_type": "PRESS"
-"keys": ["right"]
-</step_2>
+    <step_2>
+        <action_desc>
+            Move to the right column
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_2>
 
-<step_3>
-"action_desc": "Enter some info in the new cell"
-"action_type": "PRESS"
-"text": ["address"]
-</step_3>
+    <step_3>
+        <action_desc>
+            Enter some info in the new cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                address
+            </text_list>
+        </parameters>
+    </step_3>
 
-<step_4>
-"action_desc": "Navigate to the cell under the name field"
-"action_type": "PRESS"
-"keys": ["down", "left", "left"]
-</step_4>
+    <step_4>
+        <action_desc>
+            Navigate to the cell under the name field
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_4>
 
-<step_5>
-"action_desc": "Type in some info"
-"action_type": "PRESS"
-"text": ["Mango"]
-</step_5>
+    <step_5>
+        <action_desc>
+            Type in some info
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                Mango
+            </text_list>
+        </parameters>
+    </step_5>
 
-<step_6>
-"action_desc": "Navigate to the cell under the address field"
-"action_type": "PRESS"
-"keys": ["right"]
-</step_6>
+    <step_6>
+        <action_desc>
+            Navigate to the cell under the address field
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_6>
 
-<step_7>
-"action_desc": "Type in some info"
-"action_type": "PRESS"
-"text": ["Mango Market Street"]
-</step_7>
-
+    <step_7>
+        <action_desc>
+            Type in some info
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                Mango Market Street
+            </text_list>
+        </parameters>
+    </step_7>
 </step_list>
+The above is only an example, you have to provide the steps based on the current step and the screenshot provided.
+YOU HAVE to generate you own list of most approriate step list to solve the current step and fix the screenshot provided.
 
 Only use the tooling and actions that have been made available to you. Provide the most robust set of sub-steps needed to accomplish the current step.
 
 Strictly reply with the step_list alone, no other information needed, no explanations or additional details required. Just the executable step_list to complete the whole list of steps in current_step. I need to pass the step_list to another parser for executing everything.
+
+Important sidenote: 
+- You cannot jump to a certain cell, you have to navigate to it using arrow keys. So the keys should always be one of available keyboard keys.
+- in most cases excel file will be already open for you, so you don't have to worry about opening it. return an emtpy list if its anything outside of the excel file or application.
+- Your focus is mostly on manipulating that excel data in the best possible way without any execution errors as such.
+- Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
+"""
+
+verify_prompt = """
+You will be verifying whether a specific action was successfully performed based on a pair of before and after images. The images will be concatenated side-by-side, with the "before" image on the left and the "after" image on the right.
+
+I have attached the before and after image. (left side is the before and right side is the after)
+
+And here is the action that was supposed to be performed:
+<action>
+{ACTION}
+</action>
+
+Please carefully compare the "before" image on the left side to the "after" image on the right side. Look for any visual changes that would indicate whether the specified action was successfully carried out.
+
+Based on your reasoning, output "true" if you believe the action was successfully performed, or "false" if you believe it was not. (Just a true or false response is needed, no other text, anything else will be penalized)
+Based on your true or false response, the system will determine the correctness of the action performed. And work on further steps accordingly.
+
+Your sample response should look like this:
+true
+or
+false
+"""
+
+correction_prompt = """
+You are an AI assistant that specializes in analyzing OS automation tasks and generating steps to fix issues and prepare for upcoming actions. I will provide you with a concatenated before/after image showing the state before an action was performed and the problematic state after, as well as details on the performed action, the next action to prepare for, and the tooling available to you.
+
+Here is the concatenated before/after image showing the automation task failure attached as an image. (left side is the before and right side is the after)
+
+Here are the tools you have available to use in your fix and preparation steps:
+<tooling>
+{TOOLING}
+</tooling>
+
+The action that was performed leading to the failure was:  
+<performed_action>
+{PERFORMED_ACTION}
+</performed_action>
+
+The next action in the queue that we need to prepare for is:
+<prepare_for_action>
+{PREPARE_FOR_ACTION}
+</prepare_for_action>
+
+First, carefully examine the before and after images, taking note of all UI elements and how they changed after the performed action. Consider how the performed action may have caused the observed failure. Think through how you can use the available tooling to remedy the failure and get the UI into an appropriate state for the next queued action.
+
+Now, list out the specific steps to first fix the output from the failure and then prepare the UI state for the next action. Be as detailed as possible, referring to specific UI elements and tools used. Only use tools from the provided tooling list.
+
+Following is an example response format:
+<step_list>
+    <step_1>
+        <action_desc>
+            Enter info in the first cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                name
+            </text_list>
+        </parameters>
+    </step_1>
+
+    <step_2>
+        <action_desc>
+            Move to the right column
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_2>
+
+    <step_3>
+        <action_desc>
+            Enter some info in the new cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                address
+            </text_list>
+        </parameters>
+    </step_3>
+...
+<step_list>
+
+Only and only respond in the above shown format, no other information needed, no explanations or additional details required. Just the executable step_list to fix the failure and prepare for the next action. I need to pass the step_list to another parser for executing everything.
+
+Remember, your goal is to get the automation sequence back on track by fixing the current failure and proactively preventing the next action from failing as well. Restrict yourself to only the tooling provided. If the failure cannot be fixed or the next action cannot be prepared for with the given tools, say so.
+
+Analyze the images and generate your fix and preparation steps for this OS automation error scenario.
+
+Important sidenote: 
+- You cannot jump to a certain cell, you have to navigate to it using arrow keys. So the keys should always be one of available keyboard keys.
+- in most cases excel will be already open for you, so you don't have to worry about opening it. return an emtpy list if its anything outside of the excel file or application.
+- Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
+- Expand cells or increase the cell width if needed to make the content visible.
 """
 
 import re
@@ -380,7 +553,17 @@ def xmlResponseToDict(xml_response):
                     items = [item.strip() for item in items if item.strip()]
                     return {tag_name: items}
             else:
-                return {tag_name: tag_value}
+                # Recursively parse nested tags
+                nested_tags = re.findall(r'<(\w+)>(.*?)</\1>', tag_value, re.DOTALL)
+                if nested_tags:
+                    parsed_nested_tags = {}
+                    for nested_tag_name, nested_tag_content in nested_tags:
+                        parsed_nested_tag = parse_tag(f'<{nested_tag_name}>{nested_tag_content}</{nested_tag_name}>')
+                        if parsed_nested_tag:
+                            parsed_nested_tags.update(parsed_nested_tag)
+                    return {tag_name: parsed_nested_tags}
+                else:
+                    return {tag_name: tag_value}
         
         return None
 
