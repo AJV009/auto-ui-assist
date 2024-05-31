@@ -7,7 +7,7 @@ For example, if the task involves finding and opening a document, the steps shou
 
 Once you have broken down the task into a series of steps, please output the steps in this following format:
 
-<result_format>
+
 
 <step_list>
 
@@ -21,7 +21,7 @@ Change the title to 'Quarterly Report'
 
 </step_list>
 
-</result_format>
+
 
 Please make sure to include all necessary actions, no matter how small, to ensure the task can be completed successfully by following the steps. Do not assume any prior knowledge or skip any steps.
 

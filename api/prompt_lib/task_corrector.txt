@@ -7,7 +7,7 @@ Next, refine the task description itself. Rewrite it to be as clear, precise and
 
 Finally, output your results in the following format:
 
-<result_format>
+
 
 <corrected_task>
 Put the refined task description here
@@ -23,7 +23,7 @@ for the task
 true/false depending on if you think further refinement is still needed
 </refinement>
 
-</result_format>
+
 
 A few important notes:
 - If the task requires additional information from the user that you cannot fill in yourself, set "refinement" to true. Otherwise, set it to false.

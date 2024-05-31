@@ -18,7 +18,7 @@ If there are any key pieces of information missing which could be obtained by th
 
 Please provide your list of clarifying questions in the following format like this:
 
-<result_format>
+
 
 <refinement_question_list>
 Question 1
@@ -26,7 +26,7 @@ Question 2
 Question 3
 </refinement_question_list>
 
-</result_format>
+
 
 Remember, the questions you generate should help refine the task to be fully specified and self-contained. Do not include any unnecessary or redundant questions.
 [[prompt_template-system_prompt]]

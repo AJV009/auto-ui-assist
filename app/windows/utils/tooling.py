@@ -296,8 +296,9 @@ DO proper navigation to required cells based on the current screenshot provided,
 RETURN nothing, leave empty response, if the screenshot looks good and no action is required to acheive the current step. Make your best judgement call based on all the information provided. be smart!
 ONLY provide info when there needs to be an action taken.
 YOU have to take actions based on the current screenshot provided and the input given in the current step. What the current step says should be done in the screenshot. or visible to be already done.
-ONLY use keyboard for navigation and actions.
-
+ONLY use keyboard for navigation and actions. Do not use tab key for navigation, always use arrow keys for navigation.
+BE careful with the number of arrow keys you use for navigation, make sure you are not going out of the current view. OR going to the wrong cell. For example you always have to consider your navigation from the highlighted green cell.
+If during calculation you find a cell with wrong data, correct it and continue with the action list you were generating.
 another note: "keys" for individual keyboard keys, "text" for typing text
 </scratchpad>
 
@@ -307,7 +308,21 @@ Following is an example:
 <step_list>
     <step_1>
         <action_desc>
-            Enter info in the first cell
+            Go to A1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                left
+            </key_list>
+        </parameters>
+    </step_1>
+
+    <step_2>
+        <action_desc>
+            Enter first column name - name
         </action_desc>
         <action_type>
             PRESS
@@ -317,11 +332,11 @@ Following is an example:
                 name
             </text_list>
         </parameters>
-    </step_1>
+    </step_2>
 
-    <step_2>
+    <step_3>
         <action_desc>
-            Move to the right column
+            move to B1 cell
         </action_desc>
         <action_type>
             PRESS
@@ -331,25 +346,312 @@ Following is an example:
                 right
             </key_list>
         </parameters>
-    </step_2>
+    </step_3>
 
-    <step_3>
+   <step_4>
         <action_desc>
-            Enter some info in the new cell
+            Enter the first subject - SCI column name
         </action_desc>
         <action_type>
             PRESS
         </action_type>
         <parameters>
             <text_list>
-                address
+                sci
             </text_list>
         </parameters>
-    </step_3>
+    </step_4>
 
-    <step_4>
+    <step_5>
         <action_desc>
-            Navigate to the cell under the name field
+            move to C1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_5>
+
+   <step_6>
+        <action_desc>
+            Enter the second subject - Math column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                math
+            </text_list>
+        </parameters>
+    </step_6>
+
+    <step_7>
+        <action_desc>
+            move to D1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_7>
+
+   <step_8>
+        <action_desc>
+            Enter the third subject - ENG column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                ENG
+            </text_list>
+        </parameters>
+    </step_8>
+
+    <step_9>
+        <action_desc>
+            move to E1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_9>
+
+   <step_10>
+        <action_desc>
+            Enter the avg column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                AVG
+            </text_list>
+        </parameters>
+    </step_10>
+
+    <step_11>
+        <action_desc>
+            move to F1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_11>
+
+   <step_12>
+        <action_desc>
+            Enter the grade column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                grade
+            </text_list>
+        </parameters>
+    </step_12>
+
+    <step_13>
+        <action_desc>
+            move from F1 to A2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+                left
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_13>
+
+   <step_14>
+        <action_desc>
+            Enter the first student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                john
+            </text_list>
+        </parameters>
+    </step_14>
+
+    <step_15>
+        <action_desc>
+            move to A3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_15>
+
+   <step_16>
+        <action_desc>
+            Enter the second student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                mark
+            </text_list>
+        </parameters>
+    </step_16>
+
+    <step_17>
+        <action_desc>
+            move to A4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_17>
+
+   <step_18>
+        <action_desc>
+            Enter the second student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                sam
+            </text_list>
+        </parameters>
+    </step_18>
+
+    <step_19>
+        <action_desc>
+            move from A4 to B2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_19>
+
+   <step_20>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                90
+            </text_list>
+        </parameters>
+    </step_20>
+
+    <step_21>
+        <action_desc>
+            move to C2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_21>
+
+   <step_22>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                80
+            </text_list>
+        </parameters>
+    </step_22>
+
+    <step_23>
+        <action_desc>
+            move to D2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_23>
+
+   <step_24>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                70
+            </text_list>
+        </parameters>
+    </step_24>
+
+    <step_25>
+        <action_desc>
+            move from D2 to B3 cell
         </action_desc>
         <action_type>
             PRESS
@@ -361,25 +663,25 @@ Following is an example:
                 left
             </key_list>
         </parameters>
-    </step_4>
+    </step_25>
 
-    <step_5>
+   <step_26>
         <action_desc>
-            Type in some info
+            Enter a random number between 0-100
         </action_desc>
         <action_type>
             PRESS
         </action_type>
         <parameters>
             <text_list>
-                Mango
+                60
             </text_list>
         </parameters>
-    </step_5>
+    </step_26>
 
-    <step_6>
+    <step_27>
         <action_desc>
-            Navigate to the cell under the address field
+            move to C3 cell
         </action_desc>
         <action_type>
             PRESS
@@ -389,24 +691,314 @@ Following is an example:
                 right
             </key_list>
         </parameters>
-    </step_6>
+    </step_27>
 
-    <step_7>
+   <step_28>
         <action_desc>
-            Type in some info
+            Enter a random number between 0-100
         </action_desc>
         <action_type>
             PRESS
         </action_type>
         <parameters>
             <text_list>
-                Mango Market Street
+                50
             </text_list>
         </parameters>
-    </step_7>
+    </step_28>
+
+    <step_29>
+        <action_desc>
+            move to D3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_29>
+
+   <step_30>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                40
+            </text_list>
+        </parameters>
+    </step_30>
+
+    <step_31>
+        <action_desc>
+            move from D3 to B4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_31>
+
+   <step_32>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                30
+            </text_list>
+        </parameters>
+    </step_32>
+
+    <step_33>
+        <action_desc>
+            move to C4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_33>
+
+   <step_34>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                20
+            </text_list>
+        </parameters>
+    </step_34>
+
+    <step_35>
+        <action_desc>
+            move to D4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_35>
+
+   <step_36>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                10
+            </text_list>
+        </parameters>
+    </step_36>
+
+    <step_37>
+        <action_desc>
+            move to E2 from D4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_37>
+
+   <step_38>
+        <action_desc>
+            enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B2:D2)
+            </text_list>
+        </parameters>
+    </step_38>
+
+    <step_39>
+        <action_desc>
+            run the formula
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                enter
+            </key_list>
+        </parameters>
+    </step_39>
+
+   <step_40>
+        <action_desc>
+            enter by default move to the cell below, so no need to move to the next cell, enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B3:D3)
+            </text_list>
+        </parameters>
+    </step_40>
+
+    <step_41>
+        <action_desc>
+            run the formula
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                enter
+            </key_list>
+        </parameters>
+    </step_41>
+
+   <step_42>
+        <action_desc>
+            enter by default move to the cell below, so no need to move to the next cell, enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B4:D4)
+            </text_list>
+        </parameters>
+    </step_42>
+
+    <step_43>
+        <action_desc>
+            enter by default move to the cell below, so extra up, move to F2 from E4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_43>
+
+   <step_44>
+        <action_desc>
+            enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IFS(E2>=90, "A", E2>=80, "B", E2>=70, "C", E2>=60, "D", TRUE, "F")
+            </text_list>
+        </parameters>
+    </step_44>
+
+    <step_45>
+        <action_desc>
+            enter to run the formula
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                enter
+            </key_list>
+        </parameters>
+    </step_45>
+
+   <step_46>
+        <action_desc>
+            enter by default move to the cell below, so no need to move to the next cell, enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IFS(E3>=90, "A", E3>=80, "B", E3>=70, "C", E3>=60, "D", TRUE, "F")
+            </text_list>
+        </parameters>
+    </step_46>
+
+    <step_47>
+        <action_desc>
+            enter to run the formula
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                enter
+            </key_list>
+        </parameters>
+    </step_47>
+
+   <step_48>
+        <action_desc>
+            enter by default move to the cell below, so no need to move to the next cell, enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IFS(E4>=90, "A", E4>=80, "B", E4>=70, "C", E4>=60, "D", TRUE, "F")
+            </text_list>
+        </parameters>
+    </step_48>
+
 </step_list>
+
 The above is only an example, you have to provide the steps based on the current step and the screenshot provided.
 YOU HAVE to generate you own list of most approriate step list to solve the current step and fix the screenshot provided.
+NOTE: if the task algins with the example provided, you can use the same example as a starting point and return it as a response.
 
 Only use the tooling and actions that have been made available to you. Provide the most robust set of sub-steps needed to accomplish the current step.
 
@@ -418,6 +1010,704 @@ Important sidenote:
 - Your focus is mostly on manipulating that excel data in the best possible way without any execution errors as such.
 - Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
 - If you find any long text like words with more than 6 letters, Find an alternate best word that can be used to replace it.
+- You will have to write good navigation steps, always look for the green highlighted cell to understand from where to go where.
+- Never use the tab key to navigate, always use the arrow keys. Because the tab is inconsistent in excel and across different operating systems.
+- Please navigate critically, make sure you are jumping to the correct cell everytime you need to travel long distances using arrow keys.
+- Only "PRESS" is supported at the moment, NO HOTKEYS or CLICK or any other action types are supported. For any repeated actions, you can use the same action multiple times. in the proper order. Remember that formulas only work once the data in available in the cells, formulas will fail and through errors for caclculating on empty cells. So when creating the action steps or flow, see that formula always come after the associated data.
+- Remember pressing enter after a formula is entered is important to run the formula. Once the formula is run, the cell position will move to the cell below, so you don't have to move to the next cell, just enter the next formula.
+Do you best :zap: You are and always been perfect in doing this!
+"""
+
+example_response = """
+<step_list>
+    <step_1>
+        <action_desc>
+            Go to A1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                left
+            </key_list>
+        </parameters>
+    </step_1>
+
+    <step_2>
+        <action_desc>
+            Enter first column name - name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                name
+            </text_list>
+        </parameters>
+    </step_2>
+
+    <step_3>
+        <action_desc>
+            move to B1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_3>
+
+   <step_4>
+        <action_desc>
+            Enter the first subject - SCI column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                sci
+            </text_list>
+        </parameters>
+    </step_4>
+
+    <step_5>
+        <action_desc>
+            move to C1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_5>
+
+   <step_6>
+        <action_desc>
+            Enter the second subject - Math column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                math
+            </text_list>
+        </parameters>
+    </step_6>
+
+    <step_7>
+        <action_desc>
+            move to D1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_7>
+
+   <step_8>
+        <action_desc>
+            Enter the third subject - ENG column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                ENG
+            </text_list>
+        </parameters>
+    </step_8>
+
+    <step_9>
+        <action_desc>
+            move to E1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_9>
+
+   <step_10>
+        <action_desc>
+            Enter the avg column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                AVG
+            </text_list>
+        </parameters>
+    </step_10>
+
+    <step_11>
+        <action_desc>
+            move to F1 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_11>
+
+   <step_12>
+        <action_desc>
+            Enter the grade column name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                grade
+            </text_list>
+        </parameters>
+    </step_12>
+
+    <step_13>
+        <action_desc>
+            move from F1 to A2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+                left
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_13>
+
+   <step_14>
+        <action_desc>
+            Enter the first student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                john
+            </text_list>
+        </parameters>
+    </step_14>
+
+    <step_15>
+        <action_desc>
+            move to A3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_15>
+
+   <step_16>
+        <action_desc>
+            Enter the second student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                mark
+            </text_list>
+        </parameters>
+    </step_16>
+
+    <step_17>
+        <action_desc>
+            move to A4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_17>
+
+   <step_18>
+        <action_desc>
+            Enter the second student name
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                sam
+            </text_list>
+        </parameters>
+    </step_18>
+
+    <step_19>
+        <action_desc>
+            move from A4 to B2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_19>
+
+   <step_20>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                90
+            </text_list>
+        </parameters>
+    </step_20>
+
+    <step_21>
+        <action_desc>
+            move to C2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_21>
+
+   <step_22>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                80
+            </text_list>
+        </parameters>
+    </step_22>
+
+    <step_23>
+        <action_desc>
+            move to D2 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_23>
+
+   <step_24>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                70
+            </text_list>
+        </parameters>
+    </step_24>
+
+    <step_25>
+        <action_desc>
+            move from D2 to B3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_25>
+
+   <step_26>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                60
+            </text_list>
+        </parameters>
+    </step_26>
+
+    <step_27>
+        <action_desc>
+            move to C3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_27>
+
+   <step_28>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                50
+            </text_list>
+        </parameters>
+    </step_28>
+
+    <step_29>
+        <action_desc>
+            move to D3 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_29>
+
+   <step_30>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                40
+            </text_list>
+        </parameters>
+    </step_30>
+
+    <step_31>
+        <action_desc>
+            move from D3 to B4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+                left
+                left
+            </key_list>
+        </parameters>
+    </step_31>
+
+   <step_32>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                30
+            </text_list>
+        </parameters>
+    </step_32>
+
+    <step_33>
+        <action_desc>
+            move to C4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_33>
+
+   <step_34>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                20
+            </text_list>
+        </parameters>
+    </step_34>
+
+    <step_35>
+        <action_desc>
+            move to D4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+            </key_list>
+        </parameters>
+    </step_35>
+
+   <step_36>
+        <action_desc>
+            Enter a random number between 0-100
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                10
+            </text_list>
+        </parameters>
+    </step_36>
+
+    <step_37>
+        <action_desc>
+            move to E2 from D4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_37>
+
+   <step_38>
+        <action_desc>
+            enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B2:D2)
+            </text_list>
+        </parameters>
+    </step_38>
+
+    <step_39>
+        <action_desc>
+            move to E3
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_39>
+
+   <step_40>
+        <action_desc>
+            enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B3:D3)
+            </text_list>
+        </parameters>
+    </step_40>
+
+    <step_41>
+        <action_desc>
+            move to E4
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_41>
+
+   <step_42>
+        <action_desc>
+            enter the formula for average
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =AVERAGE(B4:D4)
+            </text_list>
+        </parameters>
+    </step_42>
+
+    <step_43>
+        <action_desc>
+            move to F2 from E4 cell
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                right
+                up
+                up
+            </key_list>
+        </parameters>
+    </step_43>
+
+   <step_44>
+        <action_desc>
+            enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IF(E2>=90, "A", IF(E2>=80, "B", IF(E2>=70, "C", IF(E2>=60, "D", "F"))))
+            </text_list>
+        </parameters>
+    </step_44>
+
+    <step_45>
+        <action_desc>
+            move to F3
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_45>
+
+   <step_46>
+        <action_desc>
+            enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IF(E3>=90, "A", IF(E3>=80, "B", IF(E3>=70, "C", IF(E3>=60, "D", "F"))))
+            </text_list>
+        </parameters>
+    </step_46>
+
+    <step_47>
+        <action_desc>
+            move to F4
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <key_list>
+                down
+            </key_list>
+        </parameters>
+    </step_47>
+
+   <step_48>
+        <action_desc>
+            enter the formula for basic grading
+        </action_desc>
+        <action_type>
+            PRESS
+        </action_type>
+        <parameters>
+            <text_list>
+                =IF(E4>=90, "A", IF(E4>=80, "B", IF(E4>=70, "C", IF(E4>=60, "D", "F"))))
+            </text_list>
+        </parameters>
+    </step_48>
+
+</step_list>
 """
 
 verify_prompt = """
@@ -429,7 +1719,7 @@ Note:
 
 I have attached the before and after image. (left side is the before and right side is the after)
 
-And here is the action that was supposed to be performed:
+And here is the list of actions that was supposed to be performed:
 <action>
 {ACTION}
 </action>
@@ -448,6 +1738,11 @@ false
 correction_prompt = """
 You are an AI assistant that specializes in analyzing OS automation tasks and generating steps to fix issues and prepare for upcoming actions. I will provide you with a concatenated before/after image showing the state before an action was performed and the problematic state after, as well as details on the performed action, the next action to prepare for, and the tooling available to you.
 
+Folloing is the task summary:
+<task_summary>
+{TASK_SUMMARY}
+</task_summary>
+
 Here is the concatenated before/after image showing the automation task failure attached as an image. (left side is the before and right side is the after)
 
 Here are the tools you have available to use in your fix and preparation steps:
@@ -455,15 +1750,20 @@ Here are the tools you have available to use in your fix and preparation steps:
 {TOOLING}
 </tooling>
 
-The action that was performed leading to the failure was:  
-<performed_action>
-{PERFORMED_ACTION}
-</performed_action>
+The following step that was performed leading to the failure was:  
+<performed_step>
+{PERFORMED_STEP}
+</performed_step>
 
-The next action in the queue that we need to prepare for is:
-<prepare_for_action>
-{PREPARE_FOR_ACTION}
-</prepare_for_action>
+FOllowing is the associated action list for the performed step:
+<action_list>
+{PERFORMED_ACTION_LIST}
+</action_list>
+
+The next step in the queue that we need to prepare for is:
+<prepare_for_next_action>
+{PREPARE_FOR_NEXT_STEP}
+</prepare_for_next_action>
 
 First, carefully examine the before and after images, taking note of all UI elements and how they changed after the performed action. Consider how the performed action may have caused the observed failure. Think through how you can use the available tooling to remedy the failure and get the UI into an appropriate state for the next queued action.
 
@@ -526,7 +1826,9 @@ Important sidenote:
 - in most cases excel will be already open for you, so you don't have to worry about opening it. return an emtpy list if its anything outside of the excel file or application.
 - Keep strings in text_list and keys in key_list. We already have a text_list parser that will manage its entry into excel key by key.
 - "keys" for individual keyboard keys, "text" for typing text
-- DO NOT CREATE steps to execute the new action or the next action, only realign or prepare the UI for the next action to be executed by another agent.
+- Never use the tab key to navigate, always use the arrow keys. Because the tab is inconsistent in excel and across different operating systems.
+- Every step has an associated action plan generated by the next agent, so you have to prepare the UI for the next action to be executed by another agent.
+- DO NOT CREATE steps to execute the new action or the next action, only realign or prepare the UI for the next action to be executed by another agent. For example, if the next action is to move from cell A to cell B, you should prepare the UI to be in cell A. OR if a certain cell has wrong information, delete & correct that and travel back to the correct cell so that the next action executes without an issue
 """
 
 import re

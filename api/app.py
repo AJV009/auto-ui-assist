@@ -38,7 +38,7 @@ async def task_corrector(body: TaskCorrectorBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "app_list": body.app_list},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
 
 @app.post("/task_refiner_stage_1")
@@ -50,7 +50,7 @@ async def task_refiner(body: BaseRequestBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
 
 class TaskRefinerStage2Body(BaseRequestBody):
@@ -65,7 +65,7 @@ async def task_refiner_stage_2(body: TaskRefinerStage2Body):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "refinement_data": body.refinement_data},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
 
 @app.post("/step_creation_stage_1")
@@ -77,7 +77,7 @@ async def step_creation_stage_1(body: BaseRequestBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
 
 class TaskStepSummarizationBody(BaseRequestBody):
@@ -92,5 +92,5 @@ async def step_creation_stage_1(body: TaskStepSummarizationBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "step_list": body.step_list},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
