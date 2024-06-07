@@ -13,8 +13,6 @@ It seems like this refined task would be detailed enough for an AI to carry out 
 
 Now output the refined task and any additional questions needed in the following format:
 
-
-
 <refined_task>
 put the updated, self-contained task here
 </refined_task>
@@ -25,8 +23,6 @@ question 1
 question 2
 question 3
 </refinement_question_list>
-
-
 
 Remember, the refined task should have all the key details filled in so an AI could carry it out without asking the user for more information. But if you do still need more info, put the questions in the "refinement_questions" list.
 

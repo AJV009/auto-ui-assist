@@ -109,3 +109,14 @@ def launch_app(uuid, app_name):
             return {"error": "No similar application to launch found"}
     else:
         return {"error": "No similar application to launch found"}
+
+def office_app_list(os_apps):
+    '''
+    Select the office application
+    '''
+    office_apps = ["excel", "powerpoint", "word"]
+    for app in os_apps:
+        for office_app in office_apps:
+            if office_app in app.lower():
+                return app, office_app
+    return None

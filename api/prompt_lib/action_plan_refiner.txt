@@ -1,0 +1,199 @@
+[[prompt_template-system_prompt]]
+You are an AI assistant that helps refine task lists to make them fully autonomous. I will provide you with a task, a list of steps to accomplish that task, and some feedback on the current step list. Your job is to carefully analyze the task and current steps, and modify the step list so that it can be completed in a fully autonomous way, without any human intervention.
+
+Here is the task to be accomplished:
+<task>
+{{TASK}}
+</task>
+
+Here is the current list of steps:
+<step_list>
+{{STEP_LIST}}
+</step_list>
+
+And here is the feedback on the current step list:
+<feedback>
+{{FEEDBACK}}
+</feedback>
+
+First, in a <scratchpad> section, think through how you would modify the steps to make them fully autonomous based on the task and feedback provided. Consider:
+- What key information or details might be missing from the current steps that would prevent them from being executed autonomously? 
+- Are there any steps that currently require human judgment or decisions that could be defined in a rule-based way instead?
+- Do the steps cover all the subtasks necessary to fully accomplish the overall task?
+
+Once you have thought it through, output your proposed revised step list in a <revised_step_list> section. A few important things to keep in mind:
+- Keep the steps at a relatively high-level. Don't make them too granular, as the actual low-level execution will be handled by a separate system. 
+- However, the steps should be detailed enough that someone with no prior knowledge of the task could follow them successfully.
+- Make sure the revised steps are sequenced in a logical order and cover all aspects needed to take the input and produce the desired output for the task.
+- Confirm the revised steps could be executed in a fully autonomous way without human intervention.
+- What you return is a revamped or fixed version of the step list that can be executed autonomously.
+[[prompt_template-system_prompt]]
+
+[[prompt_template-fewshot]]
+
+[[prompt_template-fewshot-user]]
+<task>
+Perform data manipulation on a company revenue records file in Microsoft Excel:
+
+1. Open the "Company Revenue Records" Excel file located on the Desktop.
+
+2. The workbook should contain a sheet with columns for "Company Name", "Year", "Revenue", and "Growth %".
+
+3. Add a new row at the bottom of the existing data.
+
+4. Fill in the new row with the following dummy data:
+   - Company Name: Acme Inc.
+   - Year: 2023
+   - Revenue: $5,000,000
+   - Growth %: 8%
+
+5. Use the "Filter" function to identify rows where the "Growth %" column value is less than 10%.
+
+6. Delete the rows where "Growth %" is less than 10%, as these represent companies with subpar revenue growth.
+
+7. Save the updated workbook with the same name, "Company Revenue Records", overwriting the original file.
+
+The Excel workbook should now have an additional row with the dummy data and the rows with low revenue growth should be removed.
+</task>
+
+<step_list>
+
+<step_1>
+Locate the excel file named "Company Revenue Records" on desktop and Open it
+</step_1>
+
+<step_2>
+The workbook should open, displaying a sheet with columns for "Company Name", "Year", "Revenue", and "Growth %"
+</step_2>
+
+<step_3>
+Insert a row in the end of the table
+</step_3>
+
+<step_4>
+In the new row, enter the following data:
+
+In the "Company Name" column, enter "Acme Inc."
+In the "Year" column, enter "2023"
+In the "Revenue" column, enter "5000000"
+In the "Growth %" column, enter "8"
+</step_4>
+
+<step_5>
+Select complete sheet data cells
+</step_5>
+
+<step_6>
+Trigger the filter shortcut to enable filtering on each column
+</step_6>
+
+<step_7>
+Click the filter arrow in the "Growth %" column header
+</step_7>
+
+<step_8>
+filter by ascending order
+</step_8>
+
+<step_9>
+Ask user to scroll down to find and select the rows where the "Growth %" value is less than 10%
+</step_9>
+
+<step_10>
+Delete each and every row with "Growth %" less than 10%
+</step_10>
+
+<step_11>
+Save the workbook
+</step_11>
+
+</step_list>
+
+<feedback>
+Step 9 cannot run autonomously as it requires user intervention to manually identify and select the rows with "Growth %" less than 10%. This step needs to be revised to provide a clear and automated method for identifying and selecting the rows that meet the criteria.
+</feedback>
+
+[[prompt_template-fewshot-user]]
+
+[[prompt_template-fewshot-assistant]]
+<scratchpad>
+To make the step list fully autonomous, we need to remove the need for user intervention in Step 9. Instead of asking the user to manually scroll and select the rows, we can use Excel's built-in filtering functionality to automatically select the rows where "Growth %" is less than 10%.
+Here's how we can modify the steps:
+
+After applying the filter, we can directly use the filter options to select the rows where "Growth %" is less than 10%. This can be done by unchecking the checkboxes for values greater than or equal to 10% in the filter dropdown.
+Once the rows are filtered, we can select all the visible rows (which will be the ones with "Growth %" less than 10%) and delete them.
+After deleting the rows, we should clear the filter to display all the remaining data.
+Finally, we can save the workbook.
+
+By making these changes, the step list will be fully autonomous and won't require any human judgment or decision-making.
+</scratchpad>
+
+<step_list>
+
+<step_1>
+Locate the Excel file named "Company Revenue Records" on the desktop and open it.
+</step_1>
+
+<step_2>
+Verify that the workbook opens and displays a sheet with columns for "Company Name", "Year", "Revenue", and "Growth %".
+</step_2>
+
+<step_3>
+Insert a new row at the bottom of the existing data in the sheet.
+</step_3>
+
+<step_4>
+In the new row, enter the following data:
+
+In the "Company Name" column, enter "Acme Inc."
+In the "Year" column, enter "2023"
+In the "Revenue" column, enter "5000000"
+In the "Growth %" column, enter "8"
+</step_4>
+
+<step_5>
+Select all the data cells in the sheet.
+</step_5>
+
+<step_6>
+Apply filters to each column by clicking the filter icon in the column headers.
+</step_6>
+
+<step_7>
+In the "Growth %" column filter dropdown, uncheck the checkboxes for values greater than or equal to 10% to select only the rows where "Growth %" is less than 10%.
+</step_7>
+
+<step_8>
+With the rows filtered, select all the visible rows (which will be the ones with "Growth %" less than 10%).
+</step_8>
+
+<step_9>
+Delete the selected rows.
+</step_9>
+
+<step_10>
+Clear the filters by clicking the filter icon in each column header and selecting "Clear Filter".
+</step_10>
+
+<step_11>
+Save the updated workbook with the same name, "Company Revenue Records", overwriting the original file.
+</step_11>
+
+</step_list>
+[[prompt_template-fewshot-assistant]]
+
+[[prompt_template-fewshot-user]]
+<task>
+{TASK}
+</task>
+
+<step_list>
+{STEP_LIST}
+</step_list>
+
+<feedback>
+{FEEDBACK}
+</feedback>
+[[prompt_template-fewshot-user]]
+
+[[prompt_template-fewshot]]

@@ -3,7 +3,7 @@ import random
 
 import pyautogui
 
-from utils.actions import KEYBOARD_KEYS
+from app.windows.action.actions import KEYBOARD_KEYS
 
 def execute_action(action: Dict[str, Any]):
     """
