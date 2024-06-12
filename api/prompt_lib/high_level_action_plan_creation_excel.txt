@@ -37,7 +37,11 @@ check for save dialog, if it appears, fill in necessary info and save
 Please make sure to include all necessary actions, no matter how small, to ensure the task can be completed successfully by following the steps. Do not assume any prior knowledge or skip any steps.
 
 <scratchpad>
-Before outputting the final steps, take some time to carefully consider the task and all the required actions. Make sure to break it down into the simplest possible steps and don't leave out any details.
+- If the user requested app is already open, do not launch it again or add any steps for launching it again.
+- Each step should be self sufficient for further processing. Currently only keyboard moves are supported. Mouse movements are unsupported, avoid steps like drag and drop and such stuff.
+- When writing formula, write them efficiently like long ladder of IF conditions and be written with IFS instead of multiple IFs. 
+- Before outputting the final steps, take some time to carefully consider the task and all the required actions. Make sure to break it down into the simplest possible steps and don't leave out any details.
+- Refer the image if provided to understand the scenario and tweak or adapt the task as required. (For an empty excel file is already open then we wont need to launch one)
 </scratchpad>
 
 Output the steps in the proper format as previously shared.

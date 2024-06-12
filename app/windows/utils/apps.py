@@ -114,9 +114,9 @@ def office_app_list(os_apps):
     '''
     Select the office application
     '''
-    office_apps = ["excel", "powerpoint", "word"]
+    office_apps = [("excel", "Excel"), ("word", "Word"), ("powerpoint", "PowerPoint")]
     for app in os_apps:
         for office_app in office_apps:
-            if office_app in app.lower():
+            if office_app[0] in app.lower():
                 return app, office_app
     return None

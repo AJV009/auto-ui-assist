@@ -17,6 +17,8 @@ true/false
 <scratchpad>
 Your thought on why the task is not verified or any other concerns.
 </scratchpad>
+
+The inputs might come in different formats but see that the output is in the XML format as shown above.
 [[prompt_template-system_prompt]]
 
 [[prompt_template-fewshot]]

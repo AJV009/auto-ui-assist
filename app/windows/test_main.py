@@ -122,61 +122,73 @@
 # # Run the test
 # test_capture_screenshot()
 
-from utils.control import execute_action
+# from utils.control import execute_action
 
-import json
+# import json
 
-def process_actions(step_list):
-    for step in step_list:
-        step_name, step_details = list(step.items())[0]
-        action_details = step_details.split("\n")
+# def process_actions(step_list):
+#     for step in step_list:
+#         step_name, step_details = list(step.items())[0]
+#         action_details = step_details.split("\n")
         
-        action = {}
-        for detail in action_details:
-            detail.replace("\"", "")
-            if ":" in detail:
-                key, value = detail.split(":", 1)
-                key = key.strip().strip('"')
-                value = value.strip().strip('"')
+#         action = {}
+#         for detail in action_details:
+#             detail.replace("\"", "")
+#             if ":" in detail:
+#                 key, value = detail.split(":", 1)
+#                 key = key.strip().strip('"')
+#                 value = value.strip().strip('"')
                 
-                if key == "action_type":
-                    action[key] = value
-                elif key == "parameters":
-                    parameters = json.loads(value)
-                    action[key] = parameters
-                elif key == "text":
-                    action["action_type"] = "PRESS"
-                    key = "keys"
-                    # convert text to list of characters
-                    action.setdefault("parameters", {})[key] = list(json.loads(value)[0])
-                elif key == "keys":
-                    action["action_type"] = "PRESS"
-                    action.setdefault("parameters", {})[key] = json.loads(value)
+#                 if key == "action_type":
+#                     action[key] = value
+#                 elif key == "parameters":
+#                     parameters = json.loads(value)
+#                     action[key] = parameters
+#                 elif key == "text":
+#                     action["action_type"] = "PRESS"
+#                     key = "keys"
+#                     # convert text to list of characters
+#                     action.setdefault("parameters", {})[key] = list(json.loads(value)[0])
+#                 elif key == "keys":
+#                     action["action_type"] = "PRESS"
+#                     action.setdefault("parameters", {})[key] = json.loads(value)
         
-        print(f"Executing step: {step_name}")
-        print(action)
-        execute_action(action)
+#         print(f"Executing step: {step_name}")
+#         print(action)
+#         execute_action(action)
 
-# Example usage
-step_list = [
-    # {
-    #     "step_1": "\"action_desc\": \"Select cell A1\"\n\"action_type\": \"CLICK\",\n\"parameters\": {\"cell\": \"A1\"}"
-    # },
-    {
-        "step_2": "\"action_desc\": \"Enter 'Name' in cell A1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"Name\"]"
-    },
-    {
-        "step_3": "\"action_desc\": \"Move to cell B1\"\n\"action_type\": \"PRESS\",\n\"keys\": [\"right\"]"
-    },
-    {
-        "step_4": "\"action_desc\": \"Enter 'Age' in cell B1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"Age\"]"
-    },
-    {
-        "step_5": "\"action_desc\": \"Move to cell C1\"\n\"action_type\": \"PRESS\",\n\"keys\": [\"right\"]"
-    },
-    {
-        "step_6": "\"action_desc\": \"Enter 'City' in cell C1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"City\"]"
-    }
-]
+# # Example usage
+# step_list = [
+#     # {
+#     #     "step_1": "\"action_desc\": \"Select cell A1\"\n\"action_type\": \"CLICK\",\n\"parameters\": {\"cell\": \"A1\"}"
+#     # },
+#     {
+#         "step_2": "\"action_desc\": \"Enter 'Name' in cell A1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"Name\"]"
+#     },
+#     {
+#         "step_3": "\"action_desc\": \"Move to cell B1\"\n\"action_type\": \"PRESS\",\n\"keys\": [\"right\"]"
+#     },
+#     {
+#         "step_4": "\"action_desc\": \"Enter 'Age' in cell B1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"Age\"]"
+#     },
+#     {
+#         "step_5": "\"action_desc\": \"Move to cell C1\"\n\"action_type\": \"PRESS\",\n\"keys\": [\"right\"]"
+#     },
+#     {
+#         "step_6": "\"action_desc\": \"Enter 'City' in cell C1\"\n\"action_type\": \"PRESS\",\n\"text\": [\"City\"]"
+#     }
+# ]
 
-process_actions(step_list)
+# process_actions(step_list)
+
+import pyautogui
+
+pyautogui.hotkey('alt', 'tab')
+pyautogui.keyDown('shiftleft')
+pyautogui.keyDown('shiftright')
+pyautogui.press('down')
+pyautogui.press('down')
+pyautogui.press('down')
+pyautogui.keyUp('shiftleft')
+pyautogui.keyUp('shiftright')
+pyautogui.hotkey('ctrl', 'd')

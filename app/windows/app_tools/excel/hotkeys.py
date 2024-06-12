@@ -605,3 +605,5 @@ objects_hotkey_function_desc = {
 }
 
 HOTKEY_FUNCTION_DESC = {**frequently_used_hotkey_function_desc, **ribbon_keyboard_hotkey_function_desc, **navigation_hotkey_function_desc, **formatting_hotkey_function_desc, **selections_and_actions_hotkey_function_desc, **data_functions_hotkey_function_desc, **objects_hotkey_function_desc}
+
+

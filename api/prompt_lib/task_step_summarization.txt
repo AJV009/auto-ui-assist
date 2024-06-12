@@ -184,8 +184,6 @@ Click Save to save a PDF version of the document with the same "Test RFP Data 1"
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-Here is my analysis and summary of the task and steps:
-
 <scratchpad>
 The main objective is to create a professional RFP document using Microsoft Word, following standard UK formatting conventions and including key sections like Introduction, Background, Scope of Work, etc. 
 
@@ -206,186 +204,6 @@ The provided task and steps outline the process for creating a professional Requ
 While the specific details of each section are not provided, the steps emphasize populating the sections with relevant information, using dummy data as needed. The process also includes reviewing the completed document for clarity, comprehensiveness and professional appearance, making any necessary edits, and saving the final RFP in both Word and PDF formats with a specified filename.
 
 By following these detailed steps, the end result should be a polished, well-structured RFP document that includes all the necessary components, follows standard UK formatting conventions, and is ready to be distributed to potential vendors.
-</summary>
-[[prompt_template-fewshot-assistant]]
-
-[[prompt_template-fewshot-user]]
-Here is the high-level task:
-<task>
-Enhance the renewable energy presentation located at Desktop/energy.pptx with relevant visuals and a professional theme:
-
-1. Open the energy.pptx file from the Desktop in Microsoft PowerPoint. 
-
-2. Insert a new slide and add a pie chart showing the global energy mix data from slide 3 of the presentation. Make sure to:
-- Label each pie slice with the energy source and percentage 
-- Apply a green color scheme to the pie chart
-
-3. On a separate slide, insert a bar chart comparing the operating costs of different energy sources. Ensure the chart:
-- Uses cost data that is appropriate for a class 12 audience
-- Clearly labels the x-axis with energy sources and y-axis with cost units
-- Has descriptive chart and axis titles
-
-4. Apply a professional 'green technology' theme to the entire presentation. This should include:
-- Using shades of green and renewable energy imagery that aligns with the theme
-- Selecting a clean, modern font and layout 
-- Adding a consistent header/footer 
-
-5. Review the updated presentation, checking for consistency, clarity, and professionalism.
-
-6. Save the final presentation as a PDF file on the Desktop, using the existing file name (energy.pdf).
-
-7. The enhanced presentation should now be ready to present or share with the class 12 audience.
-</task>
-
-And here is the step-by-step breakdown of the task:
-<steps>
-<step_1>
-Double-click the energy.pptx file on the Desktop to open it in Microsoft PowerPoint
-</step_1>
-
-<step_2>
-Click the New Slide button in the Slides section of the Home tab to insert a new blank slide
-</step_2>
-
-<step_3>
-Click the Insert tab in the PowerPoint ribbon 
-</step_3>
-
-<step_4>
-Click the Chart button in the Illustrations section and select Pie from the chart options
-</step_4>
-
-<step_5>
-In the spreadsheet that opens, replace the placeholder data with the global energy mix percentages from slide 3
-</step_5>
-
-<step_6>
-Type the name of each energy source (e.g. Oil, Coal, etc.) next to its percentage in the spreadsheet
-</step_6>
-
-<step_7>
-Close the spreadsheet to return to the pie chart in PowerPoint 
-</step_7>
-
-<step_8>
-With the pie chart selected, click the Chart Styles button on the Chart Design tab
-</step_8>
-
-<step_9>
-Select a green color scheme for the pie chart from the style options
-</step_9>
-
-<step_10>
-Click the New Slide button again to add another blank slide
-</step_10>
-
-<step_11>
-Click the Insert tab and select Bar Chart from the chart options 
-</step_11>
-
-<step_12>
-Replace the spreadsheet data with operating cost figures for different energy sources, ensuring the data is appropriate for a class 12 audience
-</step_12>
-
-<step_13>
-Type the name of each energy source in the first column and its operating cost in the second column
-</step_13>
-
-<step_14>
-Close the spreadsheet to return to the bar chart 
-</step_14>
-
-<step_15>
-Click the Add Chart Element button on the Chart Design tab and select Axis Titles
-</step_15>
-
-<step_16>
-Click the Horizontal (Category) Axis Title option and type "Energy Source" 
-</step_16>
-
-<step_17>
-Click the Vertical (Value) Axis Title option and type an appropriate unit like "Cost (USD/MWh)"
-</step_17>
-
-<step_18>
-With the chart selected, click the Quick Layout button and choose a layout that includes a descriptive chart title
-</step_18>
-
-<step_19>
-Click the Design tab in the PowerPoint ribbon
-</step_19>
-
-<step_20>
-Click the Themes drop-down and browse through the available themes
-</step_20>
-
-<step_21>
-Select a professional theme that uses shades of green and renewable energy imagery
-</step_21>
-
-<step_22>
-Click the Slide Master button on the View tab
-</step_22>
-
-<step_23>
-Select the slide master layout and click the Insert Placeholder button
-</step_23>
-
-<step_24>
-Choose Header and Footer from the placeholder options to add them to all slides
-</step_24>
-
-<step_25>
-Click the Close Master View button to return to the presentation
-</step_25>
-
-<step_26>
-Review each slide, checking that the new theme is consistently applied and the content is clear and professional
-</step_26>
-
-<step_27>
-Make any final adjustments to fonts, colors, images or layouts as needed
-</step_27>
-
-<step_28>
-Click File > Save As and select PDF as the file type
-</step_28>
-
-<step_29>
-Click the Options button and check the box for "ISO 19005-1 compliant (PDF/A)" 
-</step_29>
-
-<step_30>
-Navigate to the Desktop, type "energy" as the file name, and click Publish to save the PDF
-</step_30>
-</steps>
-[[prompt_template-fewshot-user]]
-
-[[prompt_template-fewshot-assistant]]
-Here is my analysis and summary of the task and steps:
-
-<scratchpad>
-The main objective is to enhance an existing PowerPoint presentation about renewable energy to make it more engaging and professional for a class 12 audience. This involves:
-
-Key steps:
-- Adding new slides with relevant charts (pie chart of global energy mix, bar chart of operating costs)
-- Ensuring the chart data is appropriate for the audience and clearly labeled
-- Applying a consistent, professional theme that uses green colors and energy-related imagery 
-- Including standard elements like headers, footers, and descriptive titles
-- Reviewing the enhanced presentation for clarity, consistency and overall impact
-- Saving the final presentation in PDF format for easy distribution
-
-The specific data points are less critical to convey than the overall process of selecting relevant charts, tailoring them to the audience, and integrating them into a polished, professional slide deck. The focus should be on the visual enhancement and refinement of the presentation.
-</scratchpad>
-
-<summary>
-The task and steps provided detail the process for enhancing an existing PowerPoint presentation about renewable energy to make it more engaging and suitable for a class 12 audience. The main enhancements include adding new slides with a pie chart showing the global energy mix and a bar chart comparing operating costs of different energy sources. 
-
-The steps emphasize selecting chart styles and color schemes that align with the renewable energy theme, as well as ensuring the data is appropriate for the audience and that charts are clearly labeled with titles and axis labels.
-
-Additionally, the process involves applying a professional "green technology" theme to the entire presentation, including using shades of green, clean modern fonts, and consistent headers and footers. The steps also cover reviewing the presentation for clarity, consistency and professionalism, and saving it in PDF format for easy distribution.
-
-By following these steps to visually enhance the slide content and overall design, the resulting presentation should be more engaging, informative, and tailored to the class 12 audience's needs.
 </summary>
 [[prompt_template-fewshot-assistant]]
 
@@ -504,8 +322,6 @@ Draft a brief pitch email to send to each contact, with the press release attach
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot-assistant]]
-Here is my analysis and summary of the task and steps:
-
 <scratchpad>
 The main objective is to write a press release announcing the launch of a new sustainable fashion line. The key components that need to be gathered and included are:
 

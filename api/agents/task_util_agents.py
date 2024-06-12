@@ -12,7 +12,7 @@ def multiline_string_handler(obj):
             obj[key] = re.sub(r'\\n', '\n', value)
     return obj
 
-def execute_agent(userid, sessionid, agent_name, system_prompt_params, fewshot_params, provider, model):
+def execute_agent(userid, sessionid, agent_name, system_prompt_params, fewshot_params, provider, model, image_base64=None):
     """
     Execute an agent using the specified provider and model.
     """
@@ -22,7 +22,7 @@ def execute_agent(userid, sessionid, agent_name, system_prompt_params, fewshot_p
     message_array = prompt_templates['fewshot_messages']
     message_array[-1]['content'] = message_array[-1]['content'].format(**fewshot_params)
 
-    response_content = model_loader(provider, model, system_prompt, message_array, userid, sessionid)
+    response_content = model_loader(provider, model, system_prompt, message_array, userid, sessionid, image_base64=image_base64)
 
     message_array.append(
         {

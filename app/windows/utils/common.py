@@ -1,4 +1,6 @@
 import os
+from io import BytesIO
+import base64
 import tempfile
 import threading
 
@@ -37,3 +39,14 @@ def get_input_with_timeout(prompt, timeout):
         input_thread.join()  # Allow the user to continue editing
 
     return user_input
+
+def encode_image(image_path=None, IMAGE_object=None):
+    if IMAGE_object:
+        output = BytesIO()
+        IMAGE_object.save(output, format='PNG')
+        im_data = output.getvalue()
+        return base64.b64encode(im_data).decode('utf-8')
+
+    if image_path:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')

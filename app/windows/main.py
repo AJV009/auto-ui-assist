@@ -1,68 +1,19 @@
-'''
-[[Milestone]] 1: Complete the Excel Integration
-1. Fix the agent: Refinement and high level Action Plan Creation [[DONE]] (Milestone 0.25)
-    - Task expanding - Claude Sonnet [[DONE]]
-    - Select main office app to be used (Excel in our case) [[DONE]]
-    - Create a new action plan for that office app (Excel in our case) [[DONE]]
-    - Verify the Action plan against a set of predefined rules [[DONE]]
-        - Every action should be an executable or workable action
-        - No actions like think or plan or so on
-    - Verify with user input [[DONE]]
-        - Let the user edit the final action plan before execution
-
-2. Action Plan Creation for Excel: [[WIP]] (Milestone 0.5)
-    - create a textual dictionary of helper functions [[TODO]] (use __doc__ attribute of functions)
-    - Generate low level action plan for each high level action [[TODO]]
-    - Execute a action at a time [[TODO]]
-    - Verify each action with the tool use description - Use Haiku for verification [[TODO]]
-    - If any action execution fails, jump back to the previous step and try again (max 3 times) [[TODO]]
-
-3. Create a UI for this complete process [[TODO]] (Milestone 0.75)
-    - Add ability to switch between apps to deal with switching for user input and so on [[TODO]]
-4. Create a simple portable PyInstaller package for this app [[TODO]] (Milestone 1)
-
-[[Milestone]] 2: Add the Word Integration (Milestone 2)
-1. Pick up some tasks for Word [[TODO]]
-2. Implement a set of tooling for Word [[TODO]]
-3. Implement a set of actions for Word [[TODO]]
-4. Implement a set of fewshot prompts for Word [[TODO]]
-
-[[Milestone]] 3: Finally add the PowerPoint Integration (Milestone 3)
-1. Pick up some tasks for PowerPoint [[TODO]]
-2. Implement a set of tooling for PowerPoint [[TODO]]
-3. Implement a set of actions for PowerPoint [[TODO]]
-4. Implement a set of fewshot prompts for PowerPoint [[TODO]]
-'''
-
 import os
 import requests
 import uuid
 import json
-import concurrent.futures
-import time
+import importlib
 
 from dotenv import load_dotenv
+import pyautogui
 load_dotenv()
 
 from utils.apps import app_list, office_app_list
-from action.screenshot import capture_screenshot
 from utils.user import get_userid
-from utils.common import get_temp_path, get_temp_session_path, get_input_with_timeout
+from utils.common import get_temp_path, get_temp_session_path, get_input_with_timeout, encode_image
 from utils.api import retry_api_call
 
-# temperory code for excel
-from utils.tooling import sample_prompt, keyboard_mouse, xmlResponseToDict, verify_prompt, correction_prompt
-from app.windows.action.control import execute_action
-import base64
-
-def encode_image(image_path):
-  with open(image_path, "rb") as image_file:
-    return base64.b64encode(image_file.read()).decode('utf-8')
-
-headers = {
-  "Content-Type": "application/json",
-  "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
-}
+from action.screenshot import capture_screenshot
 
 # [[PART]] 1: Setup the app & user environment
 # App name
@@ -84,6 +35,9 @@ os_apps = app_list(user_session_uuid)
 # Takes the first user task as input
 user_task = input("Enter your user_task: ")
 
+desktop_image = pyautogui.screenshot()
+desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
+
 @retry_api_call(max_attempts=3, delay=1)
 def task_corrector():
     task_corrector_uri = f"{api_url}/task_corrector"
@@ -93,6 +47,7 @@ def task_corrector():
         "os": "windows",
         "task": user_task,
         "app_list": os_apps,
+        "image_base64": desktop_image_encoded,
     }
     response = requests.post(task_corrector_uri, json=task_corrector_payload)
     response = json.loads(response.text)
@@ -110,6 +65,8 @@ print(f"Launch app list: {launch_app_list}")
 # first_office_app_type contains the string "excel"
 # extract active window, get the title and check if it contains first_office_app_type
 first_office_app, first_office_app_type = office_app_list(os_apps=launch_app_list)
+first_office_app_name = first_office_app_type[1]
+first_office_app_type = first_office_app_type[0]
 print(f"First Office App: {first_office_app}\n First Office App Type: {first_office_app_type}")
 
 # [[PART]] 3: If the task needs refinement, trigger the refinement process
@@ -125,6 +82,7 @@ if response["refinement"]:
             "sessionid": user_session_uuid,
             "os": "windows",
             "task": user_task,
+            "image_base64": desktop_image_encoded
         }
         response = requests.post(task_refiner_stage_1_uri, json=task_refiner_stage_1_payload)
         response = json.loads(response.text)
@@ -135,8 +93,9 @@ if response["refinement"]:
 
     # [[PART]] 3.1: Take user input for the refinement questions
     qna_str = ""
+    print("Please answer the following questions for task refinement: \n")
     for question in response['refinement_question_list']:
-        user_answer = input(f"Q: {question}\n A: ")
+        user_answer = get_input_with_timeout(f"Q: {question}\n A: ", 5)
         qna_str = qna_str + f"{question}\n{user_answer}\n\n"
     print("Refinement data collected: \n", qna_str)
     
@@ -171,6 +130,7 @@ def high_level_action_plan_creation():
         "os": "windows",
         "task": user_task,
         "app": first_office_app_type,
+        "image_base64": desktop_image_encoded,
     }
     response = requests.post(high_level_action_plan_creation_uri, json=high_level_action_plan_creation_payload)
     response = json.loads(response.text)
@@ -185,7 +145,7 @@ MAX_ATTEMPTS = 3
 CURRENT_ATTEMPT = 0
 while CURRENT_ATTEMPT < MAX_ATTEMPTS:
     CURRENT_ATTEMPT += 1
-    print(f"Attempt: {CURRENT_ATTEMPT}")
+    print(f"Attempt {CURRENT_ATTEMPT} to verify the action plan")
     # [[PART]] 4.1: Verify the action plan
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_verifier():
@@ -195,11 +155,12 @@ while CURRENT_ATTEMPT < MAX_ATTEMPTS:
             "sessionid": user_session_uuid,
             "os": "windows",
             "task": user_task,
-            "step_list": step_list,
+            "step_list": json.dumps(step_list),
+            "image_base64": desktop_image_encoded,
         }
         response = requests.post(action_plan_verifier_uri, json=action_plan_verifier_payload)
         response = json.loads(response.text)
-        print(f"Verified steps: {response}")
+        print(f"Verified: {response['verified']}\n Scratchpad: {response['scratchpad']}")
         return response
 
     response = action_plan_verifier()
@@ -213,8 +174,7 @@ while CURRENT_ATTEMPT < MAX_ATTEMPTS:
     else:
         print("Action plan not verified")
         print("Scratchpad: ", GLOBAL_ACTION_PLAN_SCRATCHPAD)
-        # user_input = input("Please help correct the action plan (if left empty will use scratchpad to refine it further): ")
-        user_input = get_input_with_timeout("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5): ", 5)
+        user_input = get_input_with_timeout("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5 sec): ", 5)
         if user_input:
             GLOBAL_ACTION_PLAN_SCRATCHPAD = GLOBAL_ACTION_PLAN_SCRATCHPAD + "\n User Feedback: " + user_input
 
@@ -229,12 +189,13 @@ while CURRENT_ATTEMPT < MAX_ATTEMPTS:
                 "task": user_task,
                 "step_list": step_list,
                 "feedback": GLOBAL_ACTION_PLAN_SCRATCHPAD,
+                "image_base64": desktop_image_encoded,
             }
             response = requests.post(action_plan_refiner_uri, json=action_plan_refiner_payload)
             response = json.loads(response.text)
-            print(f"Refined steps: {response}")
+            print(f"Refined steps: {response['step_list']}")
             return response
-        
+
         response = action_plan_refiner()
         step_list = response["step_list"]
 else:
@@ -250,7 +211,7 @@ def task_step_summarization():
         "sessionid": user_session_uuid,
         "os": "windows",
         "task": user_task,
-        "step_list": step_list,
+        "step_list": json.dumps(step_list),
     }
     response = requests.post(task_step_summarization_uri, json=task_step_summarization_payload)
     response = json.loads(response.text)
@@ -261,224 +222,97 @@ response = task_step_summarization()
 task_summary = response["summary"]
 task_scratchpad = response["scratchpad"]
 
-# # [[PART]] 6: Clear the logs folder
+# [[PART]] 6: Clear the logs folder
 # for file in os.listdir("logs"):
 #     if file.endswith(".json"):
 #         os.remove(os.path.join("logs", file))
 
+# [[PART]] 7: Iterate over the steps, record actions, run actions, verify actions, revert if needed
+action_dict = {}
 
-# action_dict = {}
-# step_id = 0
-# for step in step_list:
-#     print(f"Step: {step}")
-#     # take a screenshot: annotated and rectangle store as a object in screenshot_list
-#     temp_session_step_path = os.path.join(temp_session_path, f"step_{step_id}")
-#     app_window_ann_screenshot_path, app_window_coordinate_dict = capture_screenshot(
-#         screenshot_type="app_window",
-#         app_title="Excel",
-#         temp_session_step_path=temp_session_step_path
-#     )
+# # [[PART]] 7.1: Import the TOOLING using importlib & first_office_app_type
+module = importlib.import_module(f"app_tools.{first_office_app_type}.function_call_repo")
+TOOLING = module.TOOLING
 
-#     # TODO: WE ARE HERE JUST SO THAT YOU KNOW! thats roughly 30% of the work done
+step_id = 0
+for i, step in enumerate(step_list):
+    step = step[f"step_{i+1}"]
+    print(f"Step: {step}")
 
-#     # compile: current step + task summary + current screenshot + current-1 screenshot, all agents and tools data -> gpt-4o ::: EXPENSIVE
-#     the_prompt = sample_prompt.format(
-#         TASK_SUMMARY=task_summary,
-#         CURRENT_STEP=step_list[step_id],
-#         # CURRENT_STEP=json.dumps(step_list),
-#         TOOLING_AVAILABLE=keyboard_mouse,
-#     )
-#     step_id += 1
-#     base64_image = encode_image(app_window_ann_screenshot_path)
-#     payload = {
-#         "model": "gpt-4o",
-#         "temperature": 0,
-#         "messages": [
-#             {
-#             "role": "user",
-#             "content": [
-#                 {
-#                 "type": "text",
-#                 "text": the_prompt
-#                 },
-#                 {
-#                 "type": "image_url",
-#                 "image_url": {
-#                     "url": f"data:image/jpeg;base64,{base64_image}"
-#                 }
-#                 }
-#             ]
-#             }
-#         ]
-#     }
+    # [[PART]] 7.2: take a screenshot: annotated and rectangle store as a object in screenshot_list
+    temp_session_step_path = os.path.join(temp_session_path, f"step_{i+1}")
+    app_window_ann_screenshot_path, app_window_coordinate_dict = capture_screenshot(
+        screenshot_type="app_window",
+        app_title=first_office_app_name,
+        temp_session_step_path=temp_session_step_path
+    )
+    app_window_ann_screenshot_base64 = encode_image(app_window_ann_screenshot_path)
 
-#     @retry_api_call(max_attempts=3, delay=1)
-#     def get_response():
-#         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-#         print(response.json())
-        
-#         # save to a file for inspection
-#         full_response = response.json()
-#         full_response["prompt"] = the_prompt
-#         with open(f"logs/response_{step_id}.json", "w") as f:
-#             json.dump(full_response, f, indent=4)
-        
-#         content = full_response["choices"][0]["message"]["content"]
-        
-#         return content, full_response
+    # [[PART]] 7.3: record the action
+    action_dict[f"step_{i+1}"] = {
+        "high_level_action": step,
+        "low_level_actions": {},
+        "record": {
+            "before_screenshot": app_window_ann_screenshot_path,
+            "after_screenshot": None,
+        }
+    }
+
+    # [[PART]] 7.4: Generate the low level action plan for each high level action
+    @retry_api_call(max_attempts=3, delay=1)
+    def low_level_action_plan_creation():
+        low_level_action_plan_creation_uri = f"{api_url}/low_level_action_plan_creation"
+        low_level_action_plan_creation_payload = {
+            "userid": userid,
+            "sessionid": user_session_uuid,
+            "os": "windows",
+            "task": user_task,
+            "step": step,
+            "app": first_office_app_type,
+            "tooling": json.dumps(TOOLING),
+            "image_base64": app_window_ann_screenshot_base64,
+        }
+        response = requests.post(low_level_action_plan_creation_uri, json=low_level_action_plan_creation_payload)
+        response = json.loads(response.text)
+        print(f"Low level action plan: {response}")
+        return response
+
+    response = low_level_action_plan_creation()
+    # save to log file for debugging
+    # with open(f"logs/low_level_action_plan_{step_id}.json", "w") as f:
+    #     json.dump(response, f)
+    low_level_action_plan = response['action_list']
+    action_dict[f"step_{i+1}"]["low_level_actions"] = low_level_action_plan
+
+    if len(low_level_action_plan) <= 0:
+        step_id += 1
+        print("No action detected")
+        continue
     
-#     content, full_response = get_response()
-    
-#     if len(content) <= 10:
-#         print("No action detected")
-#         continue
+    # [[PART]] 7.5: Iterate over the low level actions & just run them
+    for i, action in enumerate(low_level_action_plan):
+        action = action[f'action_{i+1}']
+        print("Action: ", action)
 
-#     action_dict = xmlResponseToDict(content)
-#     # pretty print action_dict to a file and save it for inspection
-#     with open(f"logs/action_dict_{step_id}.json", "w") as f:
-#         json.dump(action_dict, f, indent=4)
+        # [[PART]] 7.5.1: Extract the function call & parameters
+        function_name = action['action_function_call']
+        # if action has the key parameters, extract the parameters
+        if "parameters" in action:
+            parameters = action['parameters']
+            # parameters is a dict of key value pairs
+        else:
+            parameters = None
 
-#     # if action_dict is empty, continue to next step
-#     if action_dict['step_list'] == []:
-#         continue
-
-#     def process_actions(step_list):
-#         action_list = []
-#         step_list = step_list['step_list']
-#         step_id = 1
-#         for step in step_list:
-#             action_obj = step[f'step_{step_id}']
-#             if "text_list" in action_obj["parameters"]:
-#                 action_obj["parameters"]["keys"] = list(action_obj["parameters"]["text_list"][0])
-#                 del action_obj["parameters"]["text_list"]
-#             elif "key_list" in action_obj["parameters"]:
-#                 action_obj["parameters"]["keys"] = action_obj["parameters"]["key_list"]
-#                 del action_obj["parameters"]["key_list"]
-#             action_list.append(action_obj)
-#             step_id += 1
-#         return action_list
-#     action_list = process_actions(action_dict)
-
-#     screenshot_before_action = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
-#     action_id = 0
-#     for action in action_list:
-#         print(action)
-#         execute_action(action)
-#         time.sleep(0.2)
-
-    # # verify complete action list
-    # screenshot_after_action = capture_screenshot(screenshot_type="app_window", app_title="Excel", temp_session_step_path=temp_session_step_path)
-    # # combine the two screenshots
-    # action_screenshot = capture_screenshot(screenshot_type="concat", concat_images=[screenshot_before_action, screenshot_after_action], temp_session_step_path=temp_session_step_path)
-    # print("action_list_screenshot: ", action_screenshot)
-    # action_screenshot = encode_image(action_screenshot[0])
-    # # verify the action worked
-    # the_prompt = verify_prompt.format(ACTION=json.dumps(action_list))
-    # payload = {
-    #     "model": "gpt-4o",
-    #     "temperature": 0,
-    #     "messages": [
-    #         {
-    #         "role": "user",
-    #         "content": [
-    #             {
-    #             "type": "text",
-    #             "text": the_prompt
-    #             },
-    #             {
-    #             "type": "image_url",
-    #             "image_url": {
-    #                 "url": f"data:image/jpeg;base64,{action_screenshot}"
-    #             }
-    #             }
-    #         ]
-    #         }
-    #     ]
-    # }
-    # @retry_api_call(max_attempts=3, delay=1)
-    # def get_verify_response():
-    #     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-    #     print(response.json())
-        
-    #     # save to a file for inspection
-    #     full_response = response.json()
-    #     with open(f"logs/response_{step_id}_verify.json", "w") as f:
-    #         json.dump(full_response, f, indent=4)
-        
-    #     content = full_response["choices"][0]["message"]["content"]
-        
-    #     return content, full_response
-    
-    # content, full_response = get_verify_response()
-    
-    # if "true" in content.lower():
-    #     print("Action verified")
-    #     step_id += 1
-    #     continue
-    # elif "false" in content.lower():
-    #     print("Action not verified")
-    #     old_step = step
-    #     if step_id+1 < len(step_list):
-    #         new_step = step_list[step_id+1]
-    #     else:
-    #         new_step = "no new step left"
-    #     the_prompt = correction_prompt.format(
-    #         TASK_SUMMARY=task_summary,
-    #         TOOLING=keyboard_mouse,
-    #         PERFORMED_STEP=old_step,
-    #         PERFORMED_ACTION_LIST=json.dumps(action_list),
-    #         PREPARE_FOR_NEXT_STEP=json.dumps(new_step)
-    #     )
-    #     payload = {
-    #         "model": "gpt-4o",
-    #         "temperature": 0,
-    #         "messages": [
-    #             {
-    #             "role": "user",
-    #             "content": [
-    #                 {
-    #                 "type": "text",
-    #                 "text": the_prompt
-    #                 },
-    #                 {
-    #                 "type": "image_url",
-    #                 "image_url": {
-    #                     "url": f"data:image/jpeg;base64,{action_screenshot}"
-    #                 }
-    #                 }
-    #             ]
-    #             }
-    #         ]
-    #     }
-    #     @retry_api_call(max_attempts=3, delay=1)
-    #     def get_correction_response():
-    #         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-    #         print(response.json())
-            
-    #         # save to a file for inspection
-    #         full_response = response.json()
-    #         full_response["prompt"] = the_prompt
-    #         with open(f"logs/response_{step_id}_correction.json", "w") as f:
-    #             json.dump(full_response, f, indent=4)
-            
-    #         content = response.json()["choices"][0]["message"]["content"]
-            
-    #         return content, full_response
-        
-    #     content, full_response = get_correction_response()
-    #     if len(content) <= 10:
-    #         print("No action detected")
-    #         continue
-    #     correction_action_dict = xmlResponseToDict(content)
-    #     # pretty print action_dict to a file and save it for inspection
-    #     with open(f"logs/action_dict_{step_id}_correction.json", "w") as f:
-    #         json.dump(correction_action_dict, f, indent=4)
-            
-    #     correction_action_list = process_actions(correction_action_dict)
-    #     correction_action_id = 0
-    #     for correction_action in correction_action_list:
-    #         print(correction_action)
-    #         execute_action(correction_action)
-
-    # time.sleep(0.2)
-    # break
+        # [[PART]] 7.5.2: Run the function call: Call function_name with parameters
+        # check for function_name in TOOLING and call the function_path with parameters
+        for tool in TOOLING:
+            if tool['name'] == function_name:
+                function_path = tool['function_path']
+                break
+        # import the function_path and call the function with parameters
+        module = importlib.import_module(function_path)
+        function_call = getattr(module, function_name)
+        if parameters:
+            function_call(**parameters)
+        else:
+            function_call()

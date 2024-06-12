@@ -12,13 +12,12 @@ Think through what information would be needed to fully specify this task, such 
 - The precise steps involved in the task
 - Any constraints, requirements or success criteria
 - The desired outputs and how they should be formatted/delivered
+- Refer the image if provided to understand the scenario and tweak or adapt the task as required.
 </scratchpad>
 
 If there are any key pieces of information missing which could be obtained by the AI system itself through a web browser (rather than asking the user), modify the task to include retrieving that information as part of the steps.
 
 Please provide your list of clarifying questions in the following format like this:
-
-
 
 <refinement_question_list>
 Question 1
@@ -26,9 +25,8 @@ Question 2
 Question 3
 </refinement_question_list>
 
-
-
 Remember, the questions you generate should help refine the task to be fully specified and self-contained. Do not include any unnecessary or redundant questions.
+Also keep in mind to not overwhelm the user with too many questions. Only ask the most essential ones that are needed to clarify the task.
 [[prompt_template-system_prompt]]
 
 [[prompt_template-fewshot]]
