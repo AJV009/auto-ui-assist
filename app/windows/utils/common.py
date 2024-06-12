@@ -5,10 +5,14 @@ import tempfile
 import threading
 
 def get_temp_path(app_name: str) -> str:
-    return os.path.join(tempfile.gettempdir(), app_name)
+    temp_path = os.path.join(tempfile.gettempdir(), app_name)
+    os.makedirs(temp_path, exist_ok=True)
+    return temp_path
 
 def get_temp_session_path(app_temp_path: str, user_session_uuid: str) -> str:
-    return os.path.join(app_temp_path, f"session-{user_session_uuid}")
+    temp_session_path = os.path.join(app_temp_path, f"session-{user_session_uuid}")
+    os.makedirs(temp_session_path, exist_ok=True)
+    return temp_session_path
 
 def store_temp_file(file, file_path, app_temp_path):
     file_path = app_temp_path + "/" + file_path
