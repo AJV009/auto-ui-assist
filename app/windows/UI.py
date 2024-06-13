@@ -5,9 +5,13 @@ import uuid
 import json
 import importlib
 from datetime import datetime
+import warnings
+warnings.simplefilter("ignore", UserWarning)
+sys.coinit_flags = 2
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-                             QLineEdit, QPushButton, QTextEdit, QHBoxLayout, QMessageBox)
+                             QLineEdit, QPushButton, QTextEdit, QHBoxLayout, QMessageBox,
+                             QDesktopWidget)
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from dotenv import load_dotenv
 import pyautogui
@@ -21,7 +25,7 @@ from action.screenshot import capture_screenshot
 load_dotenv()
 
 class APIThread(QThread):
-    log_signal = pyqtSignal(str)
+    log_signal = pyqtSignal(str, str)
     result_signal = pyqtSignal(dict)
 
     def __init__(self, main_window, method_name, **kwargs):
@@ -29,18 +33,39 @@ class APIThread(QThread):
         self.main_window = main_window
         self.method_name = method_name
         self.kwargs = kwargs
+        sys.excepthook = self.handle_uncaught_exception
 
     def run(self):
         method = getattr(self.main_window, self.method_name)
         result = method(**self.kwargs)
         self.result_signal.emit(result)
 
+    def handle_uncaught_exception(self, exctype, value, traceback):
+        error_message = f"Uncaught exception: {exctype.__name__}: {str(value)}"
+        self.log_message(error_message, "Error")
+        self.reset_app_state()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Auto UI Assist")
-        self.setGeometry(100, 100, 800, 600)
+        # Get the screen dimensions
+        screen_geometry = QDesktopWidget().screenGeometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        # Set the window dimensions similar to the Windows Run dialog box
+        window_width = 550
+        window_height = 400
+
+        # Calculate the position of the window at the bottom right corner
+        x = screen_width - window_width - 10  # Adjust the horizontal margin as needed
+        y = screen_height - window_height - 70  # Adjust the vertical margin as needed
+
+        # Set the window geometry
+        self.setGeometry(x, y, window_width, window_height)
+        # self.setMinimumSize(500, 300)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -154,20 +179,29 @@ class MainWindow(QMainWindow):
         formatted_message = f'<font color="{color}">{emoji} [{log_type}] [{current_time}] {message}</font>'
         self.logs_text.append(formatted_message)
 
+        # Write logs to a file in self.temp_session_path
+        log_file_path = os.path.join(self.temp_session_path, "session_log.txt")
+        with open(log_file_path, "a", encoding="utf-8") as log_file:
+            log_file.write(f"{emoji} [{log_type}] [{current_time}] {message}\n")
+
+        if log_type == "Error":
+            error_message = f"An error occurred. Please check the log file at: {log_file_path}.\nMaybe close the app and start again if the error persists."
+            QMessageBox.critical(self, "Error", error_message)
+
     def handle_input(self):
         user_input = self.input_textbox.text()
         if user_input.lower() in ["exit", "quit"]:
-            self.log_message("Application terminated by the user.", log_type="Info")
+            self.log_message("Application terminated by the user.", "Info")
             QApplication.quit()
             return
 
         if self.current_stage == "question":
-            self.log_message(f"User Answer: {user_input}", log_type="User Input")
+            self.log_message(f"User Answer: {user_input}", "User Input")
             self.process_user_answer(user_input)
         else:
             if user_input:
                 if self.current_stage == "task":
-                    self.log_message(f"User Task: {user_input}", log_type="User Input")
+                    self.log_message(f"User Task: {user_input}", "User Input")
                     self.user_task = user_input
                     self.api_thread = APIThread(self, "task_corrector", user_task=self.user_task)
                     self.api_thread.log_signal.connect(self.log_message)
@@ -176,7 +210,7 @@ class MainWindow(QMainWindow):
                     self.input_textbox.setEnabled(False)  # Disable the text box
                     self.input_button.setEnabled(False)  # Disable the button
                 elif self.current_stage == "action_plan":
-                    self.log_message(f"User Correction: {user_input}", log_type="User Input")
+                    self.log_message(f"User Correction: {user_input}", "User Input")
                     self.api_thread = APIThread(self, "action_plan_refiner", feedback=user_input, step_list=self.step_list)
                     self.api_thread.log_signal.connect(self.log_message)
                     self.api_thread.result_signal.connect(self.process_action_plan_refiner_result)
@@ -200,7 +234,7 @@ class MainWindow(QMainWindow):
     def show_next_question(self):
         if len(self.user_answers) < len(self.refinement_questions):
             current_question = self.refinement_questions[len(self.user_answers)]
-            self.log_message(f"Refinement Question: {current_question}", log_type="Debug")
+            self.log_message(f"Refinement Question: {current_question}", "Debug")
             self.input_textbox.setPlaceholderText(f"Q: {current_question}")
             self.input_textbox.setEnabled(True)  # Enable the text box
             self.input_button.setEnabled(True)  # Enable the button
@@ -245,14 +279,14 @@ class MainWindow(QMainWindow):
         CURRENT_ATTEMPT = 0
         while CURRENT_ATTEMPT < MAX_ATTEMPTS:
             CURRENT_ATTEMPT += 1
-            self.log_message(f"Attempt {CURRENT_ATTEMPT} to verify the action plan", log_type="Debug")
+            self.log_message(f"Attempt {CURRENT_ATTEMPT} to verify the action plan", "Debug")
             self.api_thread = APIThread(self, "action_plan_verifier", user_task=self.user_task, step_list=json.dumps(self.step_list))
             self.api_thread.log_signal.connect(self.log_message)
             self.api_thread.result_signal.connect(self.process_action_plan_verifier_result)
             self.api_thread.start()
             break
         else:
-            self.log_message("Action plan not verified after 3 attempts. Exiting...", log_type="Error")
+            self.log_message("Action plan not verified after 3 attempts. Exiting...", "Error")
             sys.exit()
 
     def start_timer(self):
@@ -268,11 +302,12 @@ class MainWindow(QMainWindow):
         self.timer_label.setText(f"Time remaining: {self.time_left} seconds")
         if self.time_left == 0:
             self.timer.stop()
-            self.log_message("Time is up! Using scratchpad.", log_type="Warning")
+            self.log_message("Time is up! Using scratchpad.", "Warning")
             self.handle_input()
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_corrector(self, user_task):
+        self.api_thread.log_signal.emit(f"Correcting task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
         task_corrector_uri = f"{self.api_url}/task_corrector"
@@ -284,13 +319,19 @@ class MainWindow(QMainWindow):
             "app_list": self.os_apps,
             "image_base64": desktop_image_encoded,
         }
-        response = requests.post(task_corrector_uri, json=task_corrector_payload)
+        try:
+            response = requests.post(task_corrector_uri, json=task_corrector_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Corrected task: {response['corrected_task']}")
+        print_response = response['corrected_task']
+        self.api_thread.log_signal.emit(f"Corrected task: {print_response}", "Debug")
         return response
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_1(self, user_task):
+        self.api_thread.log_signal.emit(f"Refining task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
         task_refiner_stage_1_uri = f"{self.api_url}/task_refiner_stage_1"
@@ -301,13 +342,19 @@ class MainWindow(QMainWindow):
             "task": user_task,
             "image_base64": desktop_image_encoded
         }
-        response = requests.post(task_refiner_stage_1_uri, json=task_refiner_stage_1_payload)
+        try:
+            response = requests.post(task_refiner_stage_1_uri, json=task_refiner_stage_1_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Refinement questions: {response['refinement_question_list']}")
+        print_response = response['refinement_question_list']
+        self.api_thread.log_signal.emit(f"Refinement questions: {print_response}", "Debug")
         return response
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_2(self, refinement_data):
+        self.api_thread.log_signal.emit(f"Refining task with answers: {refinement_data}", "Debug")
         task_refiner_stage_2_uri = f"{self.api_url}/task_refiner_stage_2"
         task_refiner_stage_2_payload = {
             "userid": self.userid,
@@ -316,13 +363,19 @@ class MainWindow(QMainWindow):
             "task": self.user_task,
             "refinement_data": refinement_data,
         }
-        response = requests.post(task_refiner_stage_2_uri, json=task_refiner_stage_2_payload)
+        try:
+            response = requests.post(task_refiner_stage_2_uri, json=task_refiner_stage_2_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Final refined task: {response['refined_task']}")
+        print_response = response['refined_task']
+        self.api_thread.log_signal.emit(f"Final refined task: {print_response}", "Debug")
         return response
 
     @retry_api_call(max_attempts=3, delay=1)
     def high_level_action_plan_creation(self, user_task, first_office_app_type):
+        self.api_thread.log_signal.emit(f"Creating high level action plan for task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
         high_level_action_plan_creation_uri = f"{self.api_url}/high_level_action_plan_creation"
@@ -334,13 +387,19 @@ class MainWindow(QMainWindow):
             "app": first_office_app_type,
             "image_base64": desktop_image_encoded,
         }
-        response = requests.post(high_level_action_plan_creation_uri, json=high_level_action_plan_creation_payload)
+        try:
+            response = requests.post(high_level_action_plan_creation_uri, json=high_level_action_plan_creation_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Step planner: {response['step_list']}")
+        print_response = response['step_list']
+        self.api_thread.log_signal.emit(f"Step planner: {print_response}", "Debug")
         return response
 
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_verifier(self, user_task, step_list):
+        self.api_thread.log_signal.emit(f"Verifying action plan for task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
         action_plan_verifier_uri = f"{self.api_url}/action_plan_verifier"
@@ -352,13 +411,20 @@ class MainWindow(QMainWindow):
             "step_list": step_list,
             "image_base64": desktop_image_encoded,
         }
-        response = requests.post(action_plan_verifier_uri, json=action_plan_verifier_payload)
+        try:
+            response = requests.post(action_plan_verifier_uri, json=action_plan_verifier_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Verified: {response['verified']}\nScratchpad: {response['scratchpad']}")
+        print_response_verified = response['verified']
+        print_response_scratchpad = response['scratchpad']
+        self.api_thread.log_signal.emit(f"Verified: {print_response_verified} | Scratchpad: {print_response_scratchpad}", "Debug")
         return response
 
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_refiner(self, feedback, step_list):
+        self.api_thread.log_signal.emit(f"Refining action plan with feedback: {feedback}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
         action_plan_refiner_uri = f"{self.api_url}/action_plan_refiner"
@@ -371,20 +437,29 @@ class MainWindow(QMainWindow):
             "feedback": feedback,
             "image_base64": desktop_image_encoded,
         }
-        response = requests.post(action_plan_refiner_uri, json=action_plan_refiner_payload)
+        try:
+            response = requests.post(action_plan_refiner_uri, json=action_plan_refiner_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Refined steps: {response['step_list']}")
+        print_response = response['step_list']
+        self.api_thread.log_signal.emit(f"Refined steps: {print_response}", "Debug")
         return response
 
     def execute_actions(self):
         module = importlib.import_module(f"app_tools.{self.first_office_app_type}.function_call_repo")
-        TOOLING = module.TOOLING
+        self.TOOLING = module.TOOLING
 
-        for i, step in enumerate(self.step_list):
-            step = step[f"step_{i+1}"]
-            self.log_message(f"Step: {step}")
+        self.current_action_index = 0
+        self.execute_next_action()
+    
+    def execute_next_action(self):
+        if self.current_action_index < len(self.step_list):
+            step = self.step_list[self.current_action_index][f"step_{self.current_action_index+1}"]
+            self.log_message(f"Step: {step}", "Debug")
 
-            temp_session_step_path = os.path.join(self.temp_session_path, f"step_{i+1}")
+            temp_session_step_path = os.path.join(self.temp_session_path, f"step_{self.current_action_index+1}")
             app_window_ann_screenshot_path, app_window_coordinate_dict = capture_screenshot(
                 screenshot_type="app_window",
                 app_title=self.first_office_app_name,
@@ -392,16 +467,17 @@ class MainWindow(QMainWindow):
             )
             app_window_ann_screenshot_base64 = encode_image(app_window_ann_screenshot_path)
 
-            self.api_thread = APIThread(self, "low_level_action_plan_creation", user_task=self.user_task, step=step, first_office_app_type=self.first_office_app_type, app_window_ann_screenshot_base64=app_window_ann_screenshot_base64, TOOLING=TOOLING)
+            self.api_thread = APIThread(self, "low_level_action_plan_creation", user_task=self.user_task, step=step, first_office_app_type=self.first_office_app_type, app_window_ann_screenshot_base64=app_window_ann_screenshot_base64, TOOLING=self.TOOLING)
             self.api_thread.log_signal.connect(self.log_message)
-            self.api_thread.result_signal.connect(lambda result: self.process_low_level_action_plan_creation_result(result, TOOLING))
+            self.api_thread.result_signal.connect(self.process_low_level_action_plan_creation_result)
             self.api_thread.start()
-        
-        self.log_message("Task execution completed.", log_type="Info")
-        self.reset_app_state()
+        else:
+            self.log_message("Task execution completed.", "Info")
+            self.reset_app_state()
 
     @retry_api_call(max_attempts=3, delay=1)
     def low_level_action_plan_creation(self, user_task, step, first_office_app_type, app_window_ann_screenshot_base64, TOOLING):
+        self.api_thread.log_signal.emit(f"Creating low level action plan for step: {step}", "Debug")
         low_level_action_plan_creation_uri = f"{self.api_url}/low_level_action_plan_creation"
         low_level_action_plan_creation_payload = {
             "userid": self.userid,
@@ -413,9 +489,14 @@ class MainWindow(QMainWindow):
             "tooling": json.dumps(TOOLING),
             "image_base64": app_window_ann_screenshot_base64,
         }
-        response = requests.post(low_level_action_plan_creation_uri, json=low_level_action_plan_creation_payload)
+        try:
+            response = requests.post(low_level_action_plan_creation_uri, json=low_level_action_plan_creation_payload)
+        except Exception as e:
+            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            raise e
         response = json.loads(response.text)
-        self.api_thread.log_signal.emit(f"Low level action plan: {response}")
+        print_response = response['action_list']
+        self.api_thread.log_signal.emit(f"Low level action plan: {print_response}", "Debug")
         return response
     
     def process_task_corrector_result(self, result):
@@ -425,7 +506,7 @@ class MainWindow(QMainWindow):
         self.first_office_app_name = self.first_office_app_type[1]
         self.first_office_app_type = self.first_office_app_type[0]
         if result["refinement"]:
-            self.log_message("Refinement requested", log_type="Warning")
+            self.log_message("Refinement requested", "Warning")
             self.current_stage = "question"
             self.show_question_section()
         else:
@@ -449,11 +530,11 @@ class MainWindow(QMainWindow):
     def process_action_plan_verifier_result(self, result):
         verified = result["verified"]
         if 'true' == verified.strip().lower():
-            self.log_message("Action plan verified", log_type="Debug")
+            self.log_message("Action plan verified", "Debug")
             self.execute_actions()
         else:
-            self.log_message("Action plan not verified", log_type="Warning")
-            self.log_message(f"Scratchpad: {result['scratchpad']}", log_type="Warning")
+            self.log_message("Action plan not verified", "Warning")
+            self.log_message(f"Scratchpad: {result['scratchpad']}", "Warning")
             self.input_textbox.setPlaceholderText("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5 sec): ")
             self.input_textbox.setEnabled(True)  # Enable the text box
             self.input_button.setEnabled(True)  # Enable the button
@@ -463,38 +544,42 @@ class MainWindow(QMainWindow):
         self.step_list = result["step_list"]
         self.execute_actions()
 
-    def process_low_level_action_plan_creation_result(self, result, TOOLING):
+    def process_low_level_action_plan_creation_result(self, result):
+        self.log_message("Processing low level action plan", "Debug")
+        self.log_message(f"Action list: {result}", "Debug")
         low_level_action_plan = result['action_list']
         if not low_level_action_plan:
-            self.log_message("No action detected", log_type="Warning")
+            self.log_message("No action detected", "Warning")
             return
 
         for i, action in enumerate(low_level_action_plan):
-            if not isinstance(action, list):
-                continue
-            if len(action) <= 0:
+            if (not isinstance(action, list) and len(action) <= 0) or (not isinstance(action, dict) and len(action) <= 0):
                 continue
             action = action[f'action_{i+1}']
-            self.log_message(f"Action: {action}", log_type="Debug")
+            self.log_message(f"Action: {action}", "Debug")
             function_name = action['action_function_call']
             if "parameters" in action:
                 parameters = action['parameters']
             else:
                 parameters = None
 
-            for tool in TOOLING:
+            for tool in self.TOOLING:
                 if tool['name'] == function_name:
                     function_path = tool['function_path']
                     break
             module = importlib.import_module(function_path)
             function_call = getattr(module, function_name)
             try:
+                self.log_message(f"Executing function '{function_name}'", "Debug")
                 if parameters:
                     function_call(**parameters)
                 else:
                     function_call()
             except Exception as e:
-                self.log_message(f"Error executing function '{function_name}': {str(e)}", log_type="Error")
+                self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
+
+        self.current_action_index += 1
+        self.execute_next_action()
                 
     def reset_app_state(self):
         self.current_stage = "task"
@@ -507,12 +592,12 @@ class MainWindow(QMainWindow):
         self.cancel_button.setEnabled(True)
         self.input_textbox.setPlaceholderText("Enter your task")
         self.input_textbox.clear()
-        self.log_message("Application reset. You can start a new task now.", log_type="Info")
+        self.log_message("Application reset. You can start with a new task now.", "Info")
 
     def cancel_process(self):
         if self.api_thread and self.api_thread.isRunning():
             self.api_thread.terminate()
-            self.log_message("Process cancelled by the user.", log_type="Warning")
+            self.log_message("Process cancelled by the user.", "Warning")
         self.reset_app_state()
 
 if __name__ == "__main__":
