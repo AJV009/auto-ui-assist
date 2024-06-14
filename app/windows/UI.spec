@@ -5,9 +5,6 @@ import os
 # Get the absolute path to the directory containing the spec file
 spec_dir = os.path.abspath(os.path.dirname(SPEC))
 
-# Specify the path to your .env file relative to the spec file directory
-env_file_path = os.path.join(spec_dir, '.env')
-
 # Specify the paths to the directories containing dynamically imported modules
 module_dirs = ['utils', 'action', 'app_tools']
 
@@ -15,7 +12,7 @@ a = Analysis(
     ['UI.py'],
     pathex=[],
     binaries=[],
-    datas=[(env_file_path, '.'), *[(os.path.join(dir), dir) for dir in module_dirs]],
+    datas=[*[(os.path.join(dir), dir) for dir in module_dirs]],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -45,4 +42,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    onefile=True
 )

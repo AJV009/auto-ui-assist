@@ -5,6 +5,7 @@ import uuid
 import json
 import importlib
 from datetime import datetime
+import traceback
 import warnings
 warnings.simplefilter("ignore", UserWarning)
 sys.coinit_flags = 2
@@ -13,7 +14,6 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QL
                              QLineEdit, QPushButton, QTextEdit, QHBoxLayout, QMessageBox,
                              QDesktopWidget)
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
-from dotenv import load_dotenv
 import pyautogui
 
 from utils.apps import app_list, office_app_list
@@ -22,11 +22,12 @@ from utils.common import get_temp_path, get_temp_session_path, encode_image
 from utils.api import retry_api_call
 from action.screenshot import capture_screenshot
 
-load_dotenv()
+API_URL="http://44.209.219.172:8000"
 
 class APIThread(QThread):
     log_signal = pyqtSignal(str, str)
     result_signal = pyqtSignal(dict)
+    reset_signal = pyqtSignal()
 
     def __init__(self, main_window, method_name, **kwargs):
         super().__init__()
@@ -34,16 +35,18 @@ class APIThread(QThread):
         self.method_name = method_name
         self.kwargs = kwargs
         sys.excepthook = self.handle_uncaught_exception
+        self.reset_signal.connect(self.main_window.reset_app_state)
 
     def run(self):
         method = getattr(self.main_window, self.method_name)
         result = method(**self.kwargs)
         self.result_signal.emit(result)
 
-    def handle_uncaught_exception(self, exctype, value, traceback):
-        error_message = f"Uncaught exception: {exctype.__name__}: {str(value)}"
-        self.log_message(error_message, "Error")
-        self.reset_app_state()
+    def handle_uncaught_exception(self, exctype, value, traceback_obj):
+        traceback_text = ''.join(traceback.format_exception(exctype, value, traceback_obj))
+        error_message = f"Uncaught exception: {exctype.__name__}: {str(value)}\n\n{traceback_text}"
+        self.log_signal.emit(error_message, "Error")
+        self.reset_signal.emit()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -158,7 +161,7 @@ class MainWindow(QMainWindow):
         self.userid = get_userid(self.app_temp_path)
         self.user_session_uuid = str(uuid.uuid4())
         self.temp_session_path = get_temp_session_path(self.app_temp_path, self.user_session_uuid)
-        self.api_url = os.getenv("API_URL")
+        self.api_url = API_URL
         self.os_apps = app_list(self.user_session_uuid)
 
     def log_message(self, message, log_type="Info"):
@@ -185,8 +188,8 @@ class MainWindow(QMainWindow):
             log_file.write(f"{emoji} [{log_type}] [{current_time}] {message}\n")
 
         if log_type == "Error":
-            error_message = f"An error occurred. Please check the log file at: {log_file_path}.\nMaybe close the app and start again if the error persists."
-            QMessageBox.critical(self, "Error", error_message)
+            error_message = f"An error occurred.<br>Error Message: {message}<br>Please check the log file at: <br>{log_file_path}<br><br>Maybe close the app and start again if the error persists."
+            QMessageBox.critical(self, "Error", f'<font color="black">{error_message}</font>')
 
     def handle_input(self):
         user_input = self.input_textbox.text()
@@ -321,10 +324,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(task_corrector_uri, json=task_corrector_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['corrected_task']
         self.api_thread.log_signal.emit(f"Corrected task: {print_response}", "Debug")
         return response
@@ -344,10 +348,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(task_refiner_stage_1_uri, json=task_refiner_stage_1_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['refinement_question_list']
         self.api_thread.log_signal.emit(f"Refinement questions: {print_response}", "Debug")
         return response
@@ -365,10 +370,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(task_refiner_stage_2_uri, json=task_refiner_stage_2_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['refined_task']
         self.api_thread.log_signal.emit(f"Final refined task: {print_response}", "Debug")
         return response
@@ -389,10 +395,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(high_level_action_plan_creation_uri, json=high_level_action_plan_creation_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['step_list']
         self.api_thread.log_signal.emit(f"Step planner: {print_response}", "Debug")
         return response
@@ -413,10 +420,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(action_plan_verifier_uri, json=action_plan_verifier_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response_verified = response['verified']
         print_response_scratchpad = response['scratchpad']
         self.api_thread.log_signal.emit(f"Verified: {print_response_verified} | Scratchpad: {print_response_scratchpad}", "Debug")
@@ -439,10 +447,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(action_plan_refiner_uri, json=action_plan_refiner_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['step_list']
         self.api_thread.log_signal.emit(f"Refined steps: {print_response}", "Debug")
         return response
@@ -491,10 +500,11 @@ class MainWindow(QMainWindow):
         }
         try:
             response = requests.post(low_level_action_plan_creation_uri, json=low_level_action_plan_creation_payload)
+            response.raise_for_status()
+            response = json.loads(response.text)
         except Exception as e:
-            self.api_thread.log_signal.emit(f"Error: {str(e)}", "Error")
+            self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        response = json.loads(response.text)
         print_response = response['action_list']
         self.api_thread.log_signal.emit(f"Low level action plan: {print_response}", "Debug")
         return response
@@ -502,9 +512,14 @@ class MainWindow(QMainWindow):
     def process_task_corrector_result(self, result):
         self.user_task = result["corrected_task"]
         launch_app_list = result["selected_app_list"]
-        self.first_office_app, self.first_office_app_type = office_app_list(os_apps=launch_app_list)
-        self.first_office_app_name = self.first_office_app_type[1]
-        self.first_office_app_type = self.first_office_app_type[0]
+        try:
+            self.first_office_app, self.first_office_app_type = office_app_list(os_apps=launch_app_list)
+            self.first_office_app_name = self.first_office_app_type[1]
+            self.first_office_app_type = self.first_office_app_type[0]
+        except Exception as e:
+            self.log_message(f"Error getting office application: {str(e)}", "Error")
+            self.reset_app_state()
+            return
         if result["refinement"]:
             self.log_message("Refinement requested", "Warning")
             self.current_stage = "question"

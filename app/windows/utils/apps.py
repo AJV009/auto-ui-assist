@@ -119,4 +119,4 @@ def office_app_list(os_apps):
         for office_app in office_apps:
             if office_app[0] in app.lower():
                 return app, office_app
-    return None
+    return None, None

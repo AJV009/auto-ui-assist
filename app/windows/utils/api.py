@@ -15,6 +15,5 @@ def retry_api_call(max_attempts=3, delay=1):
                     attempt += 1
                     time.sleep(delay)
             print(f"Failed to execute {func.__name__} after {max_attempts} attempts. Exiting.")
-            exit(1)
         return wrapper
     return decorator
