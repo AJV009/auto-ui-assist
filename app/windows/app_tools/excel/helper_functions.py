@@ -2,6 +2,7 @@
 import pyautogui
 import time
 import psutil
+import os
 from pywinauto import Application, Desktop
 
 def save_excel_pid(session_path):
@@ -98,17 +99,41 @@ def open_blank_workbook(extra_args=None):
     pyautogui.press('right') # Move to the "Blank workbook" option
     pyautogui.press('enter') # Confirm the selection
 
-def save_workbook_to_path(file_path, extra_args=None):
+def save_workbook_to_path(file_name, ideal_location='default', extra_args=None):
     """
     Saves the active file in Excel to a specific file path.
     If the file already exists, it will be overwritten.
     If only file name is provided, the file will be saved in the default directory.
 
     Args:
-        file_path (str): The file path to save the file to.
+        file_name (str): The file name or path to save the file to.
+        ideal_location (str): The ideal location to save the file to. Can be one of the following: 'desktop', 'documents', 'downloads', ''pictures', 'music', 'videos', 'default'.
     """
     pyautogui.hotkey('f12')  # Open the "Save As" dialog
-    pyautogui.write(file_path)  # Enter the file path
+
+    time.sleep(3)  # Wait for the dialog to open
+    # Get and write the file path
+    file_name = file_name.split('/')[-1]
+    current_user = os.environ['USERNAME']
+    ideal_locations = {
+        'desktop': 'Desktop',
+        'documents': 'Documents',
+        'downloads': 'Downloads',
+        'pictures': 'Pictures',
+        'music': 'Music',
+        'videos': 'Videos',
+        'default': 'default'
+    }
+    ideal_location_path = ""
+    if ideal_location == 'default':
+        pyautogui.write(file_name)  # Enter the file name
+    else:
+        if ideal_location in ideal_locations:
+            ideal_location_path = "C:/Users/" + current_user + "/" + ideal_locations[ideal_location] + "/"
+            pyautogui.write(ideal_location_path + file_name)  # Enter the file path
+        else:
+            pyautogui.write(file_name)
+
     pyautogui.press('enter')  # Confirm the file path
     pyautogui.press('enter')  # Confirm the file overwrite if it already exists
 

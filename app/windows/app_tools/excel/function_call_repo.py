@@ -18,19 +18,21 @@ TOOLING = [
         "function_path": "app_tools.excel.helper_functions"    
     },
     {
-        "name": "open_blank_workbook",
-        "description": "Opens a blank workbook in Excel",
-        "function_path": "app_tools.excel.helper_functions"
-    },
-    {
         "name": "save_workbook_to_path",
-        "description": "Saves the current workbook in Excel to a specific file path.",
+        "description": "Saves the current workbook in Excel to a specific file path. Any complicated file paths should be transformed into just file name and ideal location.",
         "parameters": {
-            "file_path": {
+            "file_name": {
                 "type": "string",
                 "description": "The file name or path where the workbook will be saved. If the file already exists, it will be overwritten. If only the file name is provided, the file will be saved in the default directory.",
+            },
+            "ideal_location": {
+                "type": "string",
+                "description": "The ideal location to save the file (e.g., 'desktop', 'documents', 'default').",
+                "default": "default"
             }
         },
+        "required": ["file_name"],
+        "function_path": "app_tools.excel.helper_functions"
     },
     {
         "name": "move_to_cell",
