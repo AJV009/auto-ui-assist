@@ -122,6 +122,7 @@ def capture_screenshot(
         if not app_title:
             raise ValueError("app_title must be provided for app_window screenshot type.")
 
+        sub_controls_enabled = True
         try:
             current_app_pid_file = temp_session_step_path + "/current_app_pid.txt"
             with open(current_app_pid_file, "r") as f:
@@ -139,24 +140,29 @@ def capture_screenshot(
                     app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
                     window = app.window(title_re=".*" + app_title + ".*")
                 except Exception:
-                    raise ValueError("Cannot find the application window.")
+                    window = Desktop(backend="uia")
+                    sub_controls_enabled = False
 
-        control = window.wrapper_object()
+        if sub_controls_enabled:
+            control = window.wrapper_object()
 
-        if sub_control_titles:
-            sub_controls = [
-                child
-                for child in control.descendants()
-                if any(re.search("(?i)" + re.escape(title), child.window_text()) for title in sub_control_titles)
-            ]
+            if sub_control_titles:
+                sub_controls = [
+                    child
+                    for child in control.descendants()
+                    if any(re.search("(?i)" + re.escape(title), child.window_text()) for title in sub_control_titles)
+                ]
+            else:
+                sub_controls = []
+
+            screenshot = capture_control(control)
+            window_rect = control.rectangle()
+            annotation_dict = get_annotation_dict(sub_controls, annotation_type)
+            screenshot, coordinate_dict = process_screenshot(screenshot, controls=sub_controls, window_rect=window_rect, annotation_dict=annotation_dict)
+            return screenshot, coordinate_dict
         else:
-            sub_controls = []
-
-        screenshot = capture_control(control)
-        window_rect = control.rectangle()
-        annotation_dict = get_annotation_dict(sub_controls, annotation_type)
-        screenshot, coordinate_dict = process_screenshot(screenshot, controls=sub_controls, window_rect=window_rect, annotation_dict=annotation_dict)
-        return screenshot, coordinate_dict
+            screenshot = ImageGrab.grab()
+            return screenshot, {}
 
     coordinate_dict = {}
     if screenshot_type == "app_window":

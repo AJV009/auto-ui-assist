@@ -88,7 +88,7 @@ def switch_to_app(extra_args=None):
                 window = app.window(title_re=".*" + app_title + ".*")
                 window.set_focus()
             except Exception:
-                raise ValueError("Cannot find the application window.")
+                pass
 
 def open_blank_workbook(extra_args=None):
     """
@@ -97,6 +97,20 @@ def open_blank_workbook(extra_args=None):
     pyautogui.hotkey('ctrl', 'n')  # Open a new workbook
     pyautogui.press('right') # Move to the "Blank workbook" option
     pyautogui.press('enter') # Confirm the selection
+
+def save_workbook_to_path(file_path, extra_args=None):
+    """
+    Saves the active file in Excel to a specific file path.
+    If the file already exists, it will be overwritten.
+    If only file name is provided, the file will be saved in the default directory.
+
+    Args:
+        file_path (str): The file path to save the file to.
+    """
+    pyautogui.hotkey('f12')  # Open the "Save As" dialog
+    pyautogui.write(file_path)  # Enter the file path
+    pyautogui.press('enter')  # Confirm the file path
+    pyautogui.press('enter')  # Confirm the file overwrite if it already exists
 
 def move_to_cell(cell_address, extra_args=None):
     """

@@ -23,6 +23,16 @@ TOOLING = [
         "function_path": "app_tools.excel.helper_functions"
     },
     {
+        "name": "save_workbook_to_path",
+        "description": "Saves the current workbook in Excel to a specific file path.",
+        "parameters": {
+            "file_path": {
+                "type": "string",
+                "description": "The file name or path where the workbook will be saved. If the file already exists, it will be overwritten. If only the file name is provided, the file will be saved in the default directory.",
+            }
+        },
+    },
+    {
         "name": "move_to_cell",
         "description": "Moves the cursor to a specific cell in Excel. ",
         "parameters": {
