@@ -5,7 +5,7 @@ from io import BytesIO
 from typing import Dict, List, Optional, Tuple, Union
 
 from PIL import Image, ImageDraw, ImageFont, ImageGrab
-from pywinauto import Application
+from pywinauto import Application, Desktop
 from pywinauto.controls.uiawrapper import UIAWrapper
 from pywinauto.win32structures import RECT
 
@@ -122,8 +122,25 @@ def capture_screenshot(
         if not app_title:
             raise ValueError("app_title must be provided for app_window screenshot type.")
 
-        app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
-        window = app.window(title_re=".*" + app_title + ".*")
+        try:
+            current_app_pid_file = temp_session_step_path + "/current_app_pid.txt"
+            with open(current_app_pid_file, "r") as f:
+                app_pid = int(f.read())
+            app = Application(backend="uia").connect(process=app_pid)
+            window = app.top_window()
+        except Exception:
+            try:
+                windows = Desktop(backend="uia").windows(title_re=".*" + app_title + ".*")
+                topmost_window = sorted(windows, key=lambda w: w.rectangle().top)[0]
+                app = Application(backend="uia").connect(handle=topmost_window.handle)
+                window = app.top_window()
+            except Exception:
+                try:
+                    app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
+                    window = app.window(title_re=".*" + app_title + ".*")
+                except Exception:
+                    raise ValueError("Cannot find the application window.")
+
         control = window.wrapper_object()
 
         if sub_control_titles:

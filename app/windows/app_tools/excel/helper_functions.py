@@ -1,15 +1,96 @@
 
 import pyautogui
+import time
+import psutil
+from pywinauto import Application, Desktop
 
-def launch_excel():
+def save_excel_pid(session_path):
+    """
+    Returns the PID of the most recently started Excel process.
+    """
+    excel_pid = None
+    for proc in psutil.process_iter(['pid', 'name', 'create_time']):
+        if proc.info['name'] == 'EXCEL.EXE':
+            excel_pid = proc.info['pid']
+    
+    file_path = session_path + "/current_app_pid.txt"
+    with open(file_path, 'w') as f:
+        f.write(str(excel_pid))
+
+def retrieve_excel_pid(session_path):
+    """
+    Retrieves the PID of the Excel process from the session path.
+    """
+    file_path = session_path + "/current_app_pid.txt"
+    with open(file_path, 'r') as f:
+        excel_pid = int(f.read())
+    return excel_pid
+
+def launch_excel_with_new_workbook(extra_args=None):
     """
     Launches Microsoft Excel.
     """
     pyautogui.hotkey('win', 'r')  # Open the Run dialog
     pyautogui.write('excel')  # Enter 'excel' to launch Excel
     pyautogui.press('enter')  # Confirm the launch
+    time.sleep(5)  # Wait for Excel to open
     
-def open_blank_workbook():
+    # Save the PID of the Excel process
+    if extra_args:
+        if 'temp_session_step_path' in extra_args:
+            save_excel_pid(extra_args['temp_session_step_path'])
+
+    pyautogui.press('enter')  # select empty workbook
+
+def launch_excel_with_existing_workbook(file_name, extra_args=None):
+    """
+    Launches Microsoft Excel with an existing workbook.
+
+    Args:
+        file_name (str): A unique file name with the file extension.
+    """
+    pyautogui.hotkey('win', 'r')  # Open the Run dialog
+    pyautogui.write('excel')  # Enter 'excel' to launch Excel
+    pyautogui.press('enter')  # Confirm the launch
+    time.sleep(5)  # Wait for Excel to open
+
+    # Save the PID of the Excel process
+    if extra_args:
+        if 'temp_session_step_path' in extra_args:
+            save_excel_pid(extra_args['temp_session_step_path'])
+
+    pyautogui.hotkey('ctrl', 'o')  # Open an existing workbook
+    pyautogui.press('enter') 
+    pyautogui.press('enter') # double enter move to the search bar
+    pyautogui.write(file_name)  # Enter the file name
+    pyautogui.press('enter')  # Confirm the file name
+
+def switch_to_app(extra_args=None):
+    # get the PID of the Excel process and switch to it
+    try:
+        if extra_args:
+            if 'temp_session_step_path' in extra_args:
+                excel_pid = retrieve_excel_pid(extra_args['temp_session_step_path'])
+                app = Application(backend="uia").connect(process=excel_pid)
+                window = app.top_window()
+                window.set_focus()
+    except Exception:
+        app_title = "Excel"
+        try:
+            windows = Desktop(backend="uia").windows(title_re=".*" + app_title + ".*")
+            topmost_window = sorted(windows, key=lambda w: w.rectangle().top)[0]
+            app = Application(backend="uia").connect(handle=topmost_window.handle)
+            window = app.top_window()
+            window.set_focus()
+        except Exception:
+            try:
+                app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
+                window = app.window(title_re=".*" + app_title + ".*")
+                window.set_focus()
+            except Exception:
+                raise ValueError("Cannot find the application window.")
+
+def open_blank_workbook(extra_args=None):
     """
     Opens a blank workbook in Excel.
     """
@@ -17,7 +98,7 @@ def open_blank_workbook():
     pyautogui.press('right') # Move to the "Blank workbook" option
     pyautogui.press('enter') # Confirm the selection
 
-def move_to_cell(cell_address):
+def move_to_cell(cell_address, extra_args=None):
     """
     Moves the cursor to a specific cell in Excel.
 
@@ -29,7 +110,7 @@ def move_to_cell(cell_address):
     pyautogui.write(cell_address)  # Enter the cell address
     pyautogui.press('enter')  # Confirm the cell address
 
-def input_data_in_cell(data):
+def input_data_in_cell(data, extra_args=None):
     """
     Inputs data into the currently active cell in Excel.
 
@@ -39,7 +120,7 @@ def input_data_in_cell(data):
     pyautogui.write(data)
     pyautogui.press('enter')  # Confirm the data entry
 
-def move_and_input_data(cell_address, data):
+def move_and_input_data(cell_address, data, extra_args=None):
     """
     Moves the cursor to a specific cell and inputs data into it.
 
@@ -50,7 +131,7 @@ def move_and_input_data(cell_address, data):
     move_to_cell(cell_address)  # Move to the specified cell
     input_data_in_cell(data)  # Input the data into the cell
 
-def select_range(start_cell, end_cell):
+def select_range(start_cell, end_cell, extra_args=None):
     """
     Selects a range of cells in Excel.
 
@@ -63,20 +144,20 @@ def select_range(start_cell, end_cell):
     pyautogui.write(end_cell)  # Enter the ending cell address
     pyautogui.press('enter')  # Confirm the range selection
 
-def create_table():
+def create_table(extra_args=None):
     """
     Creates a table in Excel from the selected range of cells.
     """
     pyautogui.hotkey('ctrl', 't')
     pyautogui.press('enter')
     
-def create_simple_chart():
+def create_simple_chart(extra_args=None):
     """
     Creates a simple chart in Excel from the selected range of cells.
     """
     pyautogui.hotkey('alt', 'f1')  # Create a chart
     
-def execute_hotkey(hotkey):
+def execute_hotkey(hotkey, extra_args=None):
     """
     Presses a specific hotkey combination in Excel.
     
@@ -86,7 +167,7 @@ def execute_hotkey(hotkey):
     key = hotkey.split('+')
     pyautogui.hotkey(key)
 
-def input_key(key):
+def input_key(key, extra_args=None):
     """
     Inputs a key in Excel.
     
@@ -95,7 +176,7 @@ def input_key(key):
     """
     pyautogui.press(key)
 
-def drag_fill_cells(start_cell, direction, num_cells):
+def drag_fill_cells(start_cell, direction, num_cells, extra_args=None):
     """
     Drags and fills cells in Excel from the starting cell to the ending cell.
     

@@ -1,9 +1,21 @@
 # build function calling context here
 TOOLING = [
     {
-        "name": "launch_excel",
-        "description": "Launches Microsoft Excel",
+        "name": "launch_excel_with_new_workbook",
+        "description": "Launches Microsoft Excel with a new workbook.",
         "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "launch_excel_with_existing_workbook",
+        "description": "Launches Microsoft Excel with an existing workbook.",
+        "parameters": {
+            "file_name": {
+                "type": "string",
+                "description": "A unique file name with the file extension.",
+            }
+        },
+        "required": ["file_name"],
+        "function_path": "app_tools.excel.helper_functions"    
     },
     {
         "name": "open_blank_workbook",

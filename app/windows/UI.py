@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QL
                              QDesktopWidget)
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 import pyautogui
+import psutil
 
 from utils.apps import app_list, office_app_list
 from utils.user import get_userid
@@ -157,6 +158,8 @@ class MainWindow(QMainWindow):
 
     def setup_backend(self):
         self.app_name = "autoUIAssist"
+        self.app_pid = os.getpid()
+        self.work_app_pid = None
         self.app_temp_path = get_temp_path(self.app_name)
         self.userid = get_userid(self.app_temp_path)
         self.user_session_uuid = str(uuid.uuid4())
@@ -575,8 +578,9 @@ class MainWindow(QMainWindow):
             function_name = action['action_function_call']
             if "parameters" in action:
                 parameters = action['parameters']
+                parameters["extra_args"] = {"temp_session_step_path": self.temp_session_path}
             else:
-                parameters = None
+                parameters = {"extra_args": {"temp_session_step_path": self.temp_session_path}}
 
             for tool in self.TOOLING:
                 if tool['name'] == function_name:
@@ -584,12 +588,15 @@ class MainWindow(QMainWindow):
                     break
             module = importlib.import_module(function_path)
             function_call = getattr(module, function_name)
+            
+            # switch to app before executing the function
+            switch_app_function = getattr(module, "switch_to_app")
+            switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
+            
+            # Now try to execute the function
             try:
                 self.log_message(f"Executing function '{function_name}'", "Debug")
-                if parameters:
-                    function_call(**parameters)
-                else:
-                    function_call()
+                function_call(**parameters)
             except Exception as e:
                 self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
 

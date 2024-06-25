@@ -181,14 +181,108 @@
 
 # process_actions(step_list)
 
+import openpyxl
 import pyautogui
+import time
+import datetime
+import psutil
+import os
+from pywinauto import Application
 
-pyautogui.hotkey('alt', 'tab')
-pyautogui.keyDown('shiftleft')
-pyautogui.keyDown('shiftright')
-pyautogui.press('down')
-pyautogui.press('down')
-pyautogui.press('down')
-pyautogui.keyUp('shiftleft')
-pyautogui.keyUp('shiftright')
-pyautogui.hotkey('ctrl', 'd')
+# def create_test_workbooks():
+#     # Create a workbook with some data already saved on disk
+#     wb1 = openpyxl.Workbook()
+#     ws1 = wb1.active
+#     ws1['A1'] = 'Test Data 1'
+#     saved_workbook_path = os.path.abspath('saved_workbook.xlsx')
+#     wb1.save(saved_workbook_path)
+
+#     # Create a workbook with some data but never saved yet
+#     wb2 = openpyxl.Workbook()
+#     ws2 = wb2.active
+#     ws2['A1'] = 'Test Data 2'
+#     unsaved_workbook_path = os.path.abspath('unsaved_workbook.xlsx')  # This file will not be saved
+
+#     return saved_workbook_path
+
+def close_and_save_excel():
+    """
+    Close all open Excel files, saving them with a timestamp if they are new.
+    """
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'] == 'EXCEL.EXE':
+            try:
+                app = Application().connect(process=proc.pid)
+                window = app.top_window()
+                window.set_focus()
+                
+                # Close the window using Alt+F4
+                pyautogui.hotkey('alt', 'f4')
+                time.sleep(1)
+                
+                # Check if there's an unsaved workbook dialog
+                try:
+                    while True:
+                        pyautogui.press('enter')  # Confirm to save changes
+                        time.sleep(1)
+                        
+                        # Handle save as dialog if it appears
+                        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                        pyautogui.write(timestamp)  # Write the timestamp as the file name
+                        pyautogui.press('enter')  # Save the file with the timestamp
+                        time.sleep(1)
+                except:
+                    pass  # No more dialogs to handle
+            except Exception as e:
+                print(f"Could not connect to process {proc.pid}: {e}")
+
+# def launch_excel_new_workbook():
+#     """
+#     Launches Microsoft Excel with a new workbook.
+#     """
+#     # close_and_save_excel()  # Close any open Excel files and save them
+#     pyautogui.hotkey('win', 'r')  # Open the Run dialog
+#     pyautogui.write('excel')  # Enter 'excel' to launch Excel
+#     pyautogui.press('enter')  # Confirm the launch
+#     time.sleep(5)  # Wait for Excel to open
+#     pyautogui.press('enter')  # Select an empty workbook
+
+# def launch_excel_existing_workbook(file_path):
+#     """
+#     Launches Microsoft Excel with an existing workbook using the full file path.
+
+#     Args:
+#         file_path (str): The full path to the file.
+#     """
+#     close_and_save_excel()  # Close any open Excel files and save them
+#     pyautogui.hotkey('win', 'r')  # Open the Run dialog
+#     pyautogui.write(f'excel "{file_path}"')  # Enter the full path to launch Excel with the file
+#     pyautogui.press('enter')  # Confirm the launch
+#     time.sleep(5)  # Wait for Excel to open
+
+# # Create the test workbooks
+# print("1. Creating test workbooks...")
+# saved_workbook_path = create_test_workbooks()
+# print(f"2. Saved workbook path: {saved_workbook_path}")
+
+# # Launch Excel with the saved workbook using the full path
+# print("3. Launching Excel with the saved workbook...")
+# launch_excel_existing_workbook(saved_workbook_path)
+# print("4. Launched Excel with the saved workbook")
+
+# # Wait a bit before launching the unsaved workbook
+# print("5. Waiting 10 seconds before launching the unsaved workbook...")
+# time.sleep(10)
+# print("6. Launching Excel with the unsaved workbook...")
+
+# # Launch Excel with a new unsaved workbook
+# print("7. Launching Excel with a new workbook...")
+# launch_excel_new_workbook()
+# print("8. Launched Excel with a new workbook")
+
+# # Test closing and saving workbooks
+# print("9. Waiting 10 seconds before closing Excel...")
+# time.sleep(10)
+print("10. Closing Excel...")
+close_and_save_excel()
+print("11. Closed Excel")
