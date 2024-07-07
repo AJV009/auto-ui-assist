@@ -194,6 +194,9 @@ To create a well-formatted RFP (Request for Proposal) document:
 [[prompt_template-fewshot-assistant]]
 
 [[prompt_template-fewshot-user]]
+Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
+
+Final one to be done:
 <task>
 {task}
 </task>

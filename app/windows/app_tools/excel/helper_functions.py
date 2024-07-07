@@ -5,6 +5,9 @@ import psutil
 import os
 from pywinauto import Application, Desktop
 
+"""
+Internal helper function
+"""
 def save_excel_pid(session_path):
     """
     Returns the PID of the most recently started Excel process.
@@ -27,6 +30,34 @@ def retrieve_excel_pid(session_path):
         excel_pid = int(f.read())
     return excel_pid
 
+def switch_to_app(extra_args=None):
+    # get the PID of the Excel process and switch to it
+    try:
+        if extra_args:
+            if 'temp_session_step_path' in extra_args:
+                excel_pid = retrieve_excel_pid(extra_args['temp_session_step_path'])
+                app = Application(backend="uia").connect(process=excel_pid)
+                window = app.top_window()
+                window.set_focus()
+    except Exception:
+        app_title = "Excel"
+        try:
+            windows = Desktop(backend="uia").windows(title_re=".*" + app_title + ".*")
+            topmost_window = sorted(windows, key=lambda w: w.rectangle().top)[0]
+            app = Application(backend="uia").connect(handle=topmost_window.handle)
+            window = app.top_window()
+            window.set_focus()
+        except Exception:
+            try:
+                app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
+                window = app.window(title_re=".*" + app_title + ".*")
+                window.set_focus()
+            except Exception:
+                pass
+
+"""
+External helper functions
+"""
 def launch_excel_with_new_workbook(extra_args=None):
     """
     Launches Microsoft Excel.
@@ -66,31 +97,7 @@ def launch_excel_with_existing_workbook(file_name, extra_args=None):
     pyautogui.write(file_name)  # Enter the file name
     pyautogui.press('enter')  # Confirm the file name
 
-def switch_to_app(extra_args=None):
-    # get the PID of the Excel process and switch to it
-    try:
-        if extra_args:
-            if 'temp_session_step_path' in extra_args:
-                excel_pid = retrieve_excel_pid(extra_args['temp_session_step_path'])
-                app = Application(backend="uia").connect(process=excel_pid)
-                window = app.top_window()
-                window.set_focus()
-    except Exception:
-        app_title = "Excel"
-        try:
-            windows = Desktop(backend="uia").windows(title_re=".*" + app_title + ".*")
-            topmost_window = sorted(windows, key=lambda w: w.rectangle().top)[0]
-            app = Application(backend="uia").connect(handle=topmost_window.handle)
-            window = app.top_window()
-            window.set_focus()
-        except Exception:
-            try:
-                app = Application(backend="uia").connect(title_re=".*" + app_title + ".*")
-                window = app.window(title_re=".*" + app_title + ".*")
-                window.set_focus()
-            except Exception:
-                pass
-
+# removed...
 def open_blank_workbook(extra_args=None):
     """
     Opens a blank workbook in Excel.
@@ -241,11 +248,87 @@ def drag_fill_cells(start_cell, direction, num_cells, extra_args=None):
         pyautogui.hotkey('ctrl', 'd')  # Fill down
     elif direction == 'right':
         pyautogui.hotkey('ctrl', 'r')  # Fill right
+        
+def enable_auto_filter(extra_args=None):
+    """
+    Enables the autofilter option in Excel.
+    Has to be called before using the filter/sort functions.
+    """
+    move_to_cell('A1')  # Move to the first cell
+    pyautogui.hotkey('ctrl', 'shift', 'l')  # Auto filter the selected range
+    
 
-# def create_pivot_table():
-#     """
-#     Creates a pivot table in Excel from the selected range of cells.
-#     """
-#     pyautogui.hotkey('alt', 'n', 'v')  # Open the "Insert" menu and select "PivotTable"
-#     figure out a way to jump to sidebar window
-#     pyautogui.press('enter')  # Confirm the selection
+def simple_sort(sort_order, sort_col, extra_args=None):
+    """
+    Sorts the selected range of cells in Excel.
+    
+    Args:
+        sort_order (str): The sort order ('ascending' or 'descending').
+        sort_col (str): The column to be sorted (e.g., 'A', 'B').
+    """
+    move_to_cell(sort_col + '1')  # Move to the specified column
+    pyautogui.hotkey('alt', 'down')  # Open the filter dropdown
+    if sort_order == 'ascending':
+        pyautogui.press('down')  # Select "Sort A to Z"
+    elif sort_order == 'descending':
+        pyautogui.press('down')
+        pyautogui.press('down')  # Select "Sort Z to A"
+    pyautogui.press('enter')  # Confirm the sort order
+    
+def simple_filter(filter_col, filter_value, extra_args=None):
+    """
+    Filters the selected range of cells in Excel.
+    
+    Args:
+        filter_col (str): The column to be filtered (e.g., 'A', 'B').
+        filter_value (str): The value to be filtered.
+    """
+    move_to_cell(filter_col + '1')  # Move to the specified column
+    pyautogui.hotkey('alt', 'down')  # Open the filter dropdown
+    for _ in range(8):
+        pyautogui.press('down')
+    pyautogui.write(filter_value)  # Enter the filter value
+    pyautogui.press('enter')  # Confirm the filter value
+
+def run_predefined_macro(macro_name, extra_args=None):
+    """
+    Runs a prerecorded macro in Excel.
+    
+    Args:
+        macro_name (str): The name of the macro to be executed.
+    """
+    pyautogui.hotkey('alt', 'f8')  # Open the "Macro" dialog
+    pyautogui.write(macro_name)  # Enter the macro name
+    pyautogui.press('enter')  # Confirm the macro name
+    pyautogui.press('enter')  # Run the macro
+
+def click_button(button_name, extra_args=None):
+    """
+    Clicks a button with the specified text in Microsoft Excel.
+    If multiple buttons with the same text are found, it will click the first one.
+
+    Args:
+        button_name (str): The text displayed on the button to be clicked.
+        extra_args (dict, optional): Additional arguments, such as 'temp_session_step_path' for retrieving the Excel process ID.
+    """
+    try:
+        # Retrieve the Excel process ID, if provided
+        if extra_args and 'temp_session_step_path' in extra_args:
+            excel_pid = retrieve_excel_pid(extra_args['temp_session_step_path'])
+            app = Application(backend="uia").connect(process=excel_pid)
+        else:
+            app = Application(backend="uia").connect(title_re=".*Microsoft Excel.*")
+
+        # Find all buttons with the specified text
+        window = app.top_window()
+        buttons = window.children(title_re=f".*{button_name}.*")
+
+        if buttons:
+            # Click the first button found
+            buttons[0].click()
+        else:
+            print(f"No button found with the text '{button_name}'")
+
+    except Exception as e:
+        print(f"Error clicking button '{button_name}': {e}")
+

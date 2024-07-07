@@ -96,6 +96,11 @@ TOOLING = [
         "function_path": "app_tools.excel.helper_functions"
     },
     {
+        "name": "create_simple_chart",
+        "description": "Creates a simple chart in Excel from the selected range of cells.",
+        "function_path": "app_tools.excel.helper_functions"
+    }
+    {
         "name": "execute_hotkey",
         "description": "Presses a specific hotkey combination in Excel.",
         "parameters": {
@@ -137,6 +142,67 @@ TOOLING = [
             }
         },
         "required": ["start_cell", "direction", "num_cells"],
+        "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "enable_auto_filter",
+        "description": "Enables the auto filter feature in Excel for the selected range of cells.",
+        "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "simple_sort",
+        "description": "Sorts the selected range of cells in Excel in ascending or descending order.",
+        "parameters": {
+            "sort_order": {
+                "type": "string",
+                "description": "The sort order ('ascending' or 'descending').",
+            },
+            "sort_col": {
+                "type": "string",
+                "description": "The column to sort by (e.g., 'A', 'B').",
+            }
+        },
+        "required": ["sort_order", "sort_col"],
+        "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "simple_filter",
+        "description": "Filters the selected range of cells in Excel based on a specific criteria.",
+        "parameters": {
+            "filter_col": {
+                "type": "string",
+                "description": "The column to filter by (e.g., 'A', 'B').",
+            },
+            "filter_value": {
+                "type": "string",
+                "description": "The value to filter by.",
+            }
+        },
+        "required": ["filter_col", "filter_value"],
+        "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "run_predefined_macro",
+        "description": "Runs a predefined macro in Excel.",
+        "parameters": {
+            "macro_name": {
+                "type": "string",
+                "description": "The name of the macro to run.",
+            }
+        },
+        "required": ["macro_name"],
+        "function_path": "app_tools.excel.helper_functions"
+    },
+    {
+        "name": "click_button",
+        "description": "Clicks a specific button in Excel.",
+        "parameters": {
+            "button_name": {
+                "type": "string",
+                "description": "The name of the button to click.",
+            }
+        },
+        "required": ["button_name"],
         "function_path": "app_tools.excel.helper_functions"
     }
 ]

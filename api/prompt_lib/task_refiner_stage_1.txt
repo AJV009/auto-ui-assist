@@ -111,6 +111,8 @@ What file format should the completed RFP document be saved in (e.g. Microsoft W
 <task>
 {task}
 </task>
+
+Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot]]
