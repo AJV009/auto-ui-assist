@@ -43,7 +43,7 @@ async def task_corrector(body: TaskCorrectorBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "app_list": body.app_list},
         provider="anthropic",
-        model="claude_haiku",
+        model="claude_sonnet",
         image_base64=body.image_base64
     )
 
@@ -59,7 +59,7 @@ async def task_refiner(body: TaskRefinerBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task},
         provider="anthropic",
-        model="claude_opus",
+        model="claude_sonnet",
         image_base64=body.image_base64
     )
 
@@ -75,7 +75,7 @@ async def task_refiner_stage_2(body: TaskRefinerStage2Body):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "refinement_data": body.refinement_data},
         provider="anthropic",
-        model="claude_opus"
+        model="claude_sonnet"
     )
 
 class HighLevelActionPlanCreationBody(BaseRequestBody):
@@ -90,8 +90,8 @@ async def high_level_action_plan_creation(body: HighLevelActionPlanCreationBody)
         agent_name=f"high_level_action_plan_creation_{body.app}",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task},
-        provider="openai",
-        model="gpt-4o",
+        provider="anthropic",
+        model="claude_sonnet",
         image_base64=body.image_base64
     )
 
@@ -141,7 +141,7 @@ async def task_step_summarization(body: TaskStepSummarizationBody):
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "step_list": body.step_list},
         provider="anthropic",
-        model="claude_haiku"
+        model="claude_sonnet"
     )
 
 class LowLevelActionPlanCreationBody(BaseRequestBody):
@@ -149,6 +149,7 @@ class LowLevelActionPlanCreationBody(BaseRequestBody):
     tooling: str
     image_base64: str
     step: str
+    previous_execution_data: str
 
 @app.post("/low_level_action_plan_creation")
 async def low_level_action_plan_creation(body: LowLevelActionPlanCreationBody):
@@ -157,8 +158,8 @@ async def low_level_action_plan_creation(body: LowLevelActionPlanCreationBody):
         sessionid=body.sessionid,
         agent_name=f"low_level_action_plan_creation_{body.app}",
         system_prompt_params={"os": body.os, "tooling": body.tooling},
-        fewshot_params={"task": body.step},
-        provider="openai",
-        model="gpt-4o",
+        fewshot_params={"task": body.step, "previous_execution_data": body.previous_execution_data},
+        provider="anthropic",
+        model="claude_sonnet",
         image_base64=body.image_base64
     )

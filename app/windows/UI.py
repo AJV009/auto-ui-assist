@@ -166,6 +166,7 @@ class MainWindow(QMainWindow):
         self.temp_session_path = get_temp_session_path(self.app_temp_path, self.user_session_uuid)
         self.api_url = API_URL
         self.os_apps = app_list(self.user_session_uuid)
+        self.action_history = []
 
     def log_message(self, message, log_type="Info"):
         message = message.strip()  # Remove whitespace and newline characters from both ends
@@ -498,6 +499,7 @@ class MainWindow(QMainWindow):
             "task": user_task,
             "step": step,
             "app": first_office_app_type,
+            "previous_execution_data": "\n".join(self.action_history),
             "tooling": json.dumps(TOOLING),
             "image_base64": app_window_ann_screenshot_base64,
         }
@@ -574,31 +576,43 @@ class MainWindow(QMainWindow):
             if (not isinstance(action, list) and len(action) <= 0) or (not isinstance(action, dict) and len(action) <= 0):
                 continue
             action = action[f'action_{i+1}']
-            self.log_message(f"Action: {action}", "Debug")
-            function_name = action['action_function_call']
-            if "parameters" in action:
-                parameters = action['parameters']
-                parameters["extra_args"] = {"temp_session_step_path": self.temp_session_path}
-            else:
-                parameters = {"extra_args": {"temp_session_step_path": self.temp_session_path}}
+            if 'action_function_call' in action:
+                self.log_message(f"Action: {action}", "Debug")
+                function_name = action['action_function_call']
+                if "action_scratchpad" in action:
+                    action_scratchpad = action["action_scratchpad"]
+                    history_note = f"""
+        Function Called: {function_name}
+        Action Scratchpad: {action_scratchpad}
+                    """
+                else:
+                    history_note = f"""
+        Function Called: {function_name}
+                    """
+                self.action_history.append(history_note)
+                if "parameters" in action:
+                    parameters = action['parameters']
+                    parameters["extra_args"] = {"temp_session_step_path": self.temp_session_path}
+                else:
+                    parameters = {"extra_args": {"temp_session_step_path": self.temp_session_path}}
 
-            for tool in self.TOOLING:
-                if tool['name'] == function_name:
-                    function_path = tool['function_path']
-                    break
-            module = importlib.import_module(function_path)
-            function_call = getattr(module, function_name)
-            
-            # switch to app before executing the function
-            switch_app_function = getattr(module, "switch_to_app")
-            switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
-            
-            # Now try to execute the function
-            try:
-                self.log_message(f"Executing function '{function_name}'", "Debug")
-                function_call(**parameters)
-            except Exception as e:
-                self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
+                for tool in self.TOOLING:
+                    if tool['name'] == function_name:
+                        function_path = tool['function_path']
+                        break
+                module = importlib.import_module(function_path)
+                function_call = getattr(module, function_name)
+                
+                # switch to app before executing the function
+                switch_app_function = getattr(module, "switch_to_app")
+                switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
+                
+                # Now try to execute the function
+                try:
+                    self.log_message(f"Executing function '{function_name}'", "Debug")
+                    function_call(**parameters)
+                except Exception as e:
+                    self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
 
         self.current_action_index += 1
         self.execute_next_action()
@@ -609,6 +623,7 @@ class MainWindow(QMainWindow):
         self.user_answers = []
         self.refinement_questions = []
         self.step_list = []
+        self.action_history = []
         self.input_textbox.setEnabled(True)
         self.input_button.setEnabled(True)
         self.cancel_button.setEnabled(True)

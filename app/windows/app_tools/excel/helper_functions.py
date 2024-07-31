@@ -8,6 +8,19 @@ from pywinauto import Application, Desktop
 """
 Internal helper function
 """
+def is_excel_running():
+    """Check if Excel is already running."""
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'] == 'EXCEL.EXE':
+            return True
+    return False
+
+def focus_existing_excel():
+    """Focus on the existing Excel window."""
+    app = Application(backend="uia").connect(title_re=".*Excel.*")
+    window = app.top_window()
+    window.set_focus()
+
 def save_excel_pid(session_path):
     """
     Returns the PID of the most recently started Excel process.
@@ -60,40 +73,46 @@ External helper functions
 """
 def launch_excel_with_new_workbook(extra_args=None):
     """
-    Launches Microsoft Excel.
+    Launches Microsoft Excel or focuses on an existing instance.
+    Ensures only one instance of Excel is running.
     """
-    pyautogui.hotkey('win', 'r')  # Open the Run dialog
-    pyautogui.write('excel')  # Enter 'excel' to launch Excel
-    pyautogui.press('enter')  # Confirm the launch
-    time.sleep(5)  # Wait for Excel to open
+    if is_excel_running():
+        focus_existing_excel()
+    else:
+        pyautogui.hotkey('win', 'r')  # Open the Run dialog
+        pyautogui.write('excel')  # Enter 'excel' to launch Excel
+        pyautogui.press('enter')  # Confirm the launch
+        time.sleep(5)  # Wait for Excel to open
     
     # Save the PID of the Excel process
-    if extra_args:
-        if 'temp_session_step_path' in extra_args:
-            save_excel_pid(extra_args['temp_session_step_path'])
+    if extra_args and 'temp_session_step_path' in extra_args:
+        save_excel_pid(extra_args['temp_session_step_path'])
 
     pyautogui.press('enter')  # select empty workbook
 
 def launch_excel_with_existing_workbook(file_name, extra_args=None):
     """
-    Launches Microsoft Excel with an existing workbook.
+    Launches Microsoft Excel with an existing workbook or focuses on an existing instance.
+    Ensures only one instance of Excel is running.
 
     Args:
         file_name (str): A unique file name with the file extension.
     """
-    pyautogui.hotkey('win', 'r')  # Open the Run dialog
-    pyautogui.write('excel')  # Enter 'excel' to launch Excel
-    pyautogui.press('enter')  # Confirm the launch
-    time.sleep(5)  # Wait for Excel to open
+    if is_excel_running():
+        focus_existing_excel()
+    else:
+        pyautogui.hotkey('win', 'r')  # Open the Run dialog
+        pyautogui.write('excel')  # Enter 'excel' to launch Excel
+        pyautogui.press('enter')  # Confirm the launch
+        time.sleep(5)  # Wait for Excel to open
 
     # Save the PID of the Excel process
-    if extra_args:
-        if 'temp_session_step_path' in extra_args:
-            save_excel_pid(extra_args['temp_session_step_path'])
+    if extra_args and 'temp_session_step_path' in extra_args:
+        save_excel_pid(extra_args['temp_session_step_path'])
 
     pyautogui.hotkey('ctrl', 'o')  # Open an existing workbook
     pyautogui.press('enter') 
-    pyautogui.press('enter') # double enter move to the search bar
+    pyautogui.press('enter')  # double enter move to the search bar
     pyautogui.write(file_name)  # Enter the file name
     pyautogui.press('enter')  # Confirm the file name
 

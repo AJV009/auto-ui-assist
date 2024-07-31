@@ -269,6 +269,11 @@ Input the average formula in cell B5 to calculate the average age of the individ
 [[prompt_template-fewshot-user]]
 Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
 
+The following tasks or actions have already been executed:
+<previously_executed>
+{previous_execution_data}
+</previously_executed>
+
 Task to be broken down:
 <task>
 {task}

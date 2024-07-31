@@ -99,7 +99,7 @@ TOOLING = [
         "name": "create_simple_chart",
         "description": "Creates a simple chart in Excel from the selected range of cells.",
         "function_path": "app_tools.excel.helper_functions"
-    }
+    },
     {
         "name": "execute_hotkey",
         "description": "Presses a specific hotkey combination in Excel.",
