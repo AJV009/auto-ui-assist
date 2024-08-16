@@ -116,15 +116,6 @@ def launch_excel_with_existing_workbook(file_name, extra_args=None):
     pyautogui.write(file_name)  # Enter the file name
     pyautogui.press('enter')  # Confirm the file name
 
-# removed...
-def open_blank_workbook(extra_args=None):
-    """
-    Opens a blank workbook in Excel.
-    """
-    pyautogui.hotkey('ctrl', 'n')  # Open a new workbook
-    pyautogui.press('right') # Move to the "Blank workbook" option
-    pyautogui.press('enter') # Confirm the selection
-
 def save_workbook_to_path(file_name, ideal_location='default', extra_args=None):
     """
     Saves the active file in Excel to a specific file path.
@@ -196,18 +187,19 @@ def move_and_input_data(cell_address, data, extra_args=None):
     move_to_cell(cell_address)  # Move to the specified cell
     input_data_in_cell(data)  # Input the data into the cell
 
-def select_range(start_cell, end_cell, extra_args=None):
+def select_range(range_string, extra_args=None):
     """
-    Selects a range of cells in Excel.
+    Selects a range or multiple ranges of cells in Excel.
 
     Args:
-        start_cell (str): The address of the starting cell (e.g., 'A1', 'B3').
-        end_cell (str): The address of the ending cell (e.g., 'C5', 'D10').
+        range_string (str): A string representing one or more cell ranges.
+                            Multiple ranges should be separated by commas.
+                            Example: 'A1:C5, E1:G5, I1:K5'
     """
-    move_to_cell(start_cell)  # Move to the starting cell
-    pyautogui.hotkey('shift', 'ctrl', 'g')  # Open the "Go To" dialog for range selection
-    pyautogui.write(end_cell)  # Enter the ending cell address
-    pyautogui.press('enter')  # Confirm the range selection
+    # Use the Go To dialog to select the range(s)
+    pyautogui.hotkey('ctrl', 'g')  # Open the "Go To" dialog
+    pyautogui.write(range_string)  # Enter the range(s)
+    pyautogui.press('enter')  # Confirm the selection
 
 def create_table(extra_args=None):
     """
@@ -216,11 +208,201 @@ def create_table(extra_args=None):
     pyautogui.hotkey('ctrl', 't')
     pyautogui.press('enter')
     
-def create_simple_chart(extra_args=None):
+def create_chart(chart_type="bar_2_d_clustered_column",extra_args=None):
     """
     Creates a simple chart in Excel from the selected range of cells.
+
+    Args:
+        chart_type (str): The type of chart to be created
+    
+    Supported types:
+    - Bar Charts
+        - 2-D Column
+            - Clustered Column: 'bar_2_d_clustered_column'
+            - Stacked Column: 'bar_2_d_stacked_column'
+            - 100% Stacked Column: 'bar_2_d_100_stacked_column'
+        - 3-D Column
+            - Clustered Column: 'bar_3_d_clustered_column'
+            - Stacked Column: 'bar_3_d_stacked_column'
+            - 100% Stacked Column: 'bar_3_d_100_stacked_column'
+            - 3-D Column: 'bar_3_d_column'
+        - 2-D Bar
+            - Clustered Bar: 'bar_2_d_clustered_bar'
+            - Stacked Bar: 'bar_2_d_stacked_bar'
+            - 100% Stacked Bar: 'bar_2_d_100_stacked_bar'
+        - 3-D Bar
+            - Clustered Bar: 'bar_3_d_clustered_bar'
+            - Stacked Bar: 'bar_3_d_stacked_bar'
+            - 100% Stacked Bar: 'bar_3_d_100_stacked_bar'
+    - Hierarchy
+        - Treemap: 'hierarchy_treemap'
+        - Sunburst: 'hierarchy_sunbrust'
+    - Line / Area
+        - 2-D Line
+            - Line: 'line_2_d_line'
+            - Stacked Line: 'line_2_d_stacked_line'
+            - 100% Stacked Line: 'line_2_d_100_stacked_line'
+            - Line with Markers: 'line_2_d_line_with_markers'
+            - Stacked Line with Markers: 'line_2_d_stacked_line_with_markers'
+            - 100% Stacked Line with Markers: 'line_2_d_100_stacked_line_with_markers'
+        - 3-D Line
+            - Line: 'line_3_d_line'
+        - 2-D Area
+            - Area: 'line_2_d_area'
+            - Stacked Area: 'line_2_d_stacked_area'
+            - 100% Stacked Area: 'line_2_d_100_stacked_area'
+        - 3-D Area
+            - Area: 'line_3_d_area'
+            - Stacked Area: 'line_3_d_stacked_area'
+            - 100% Stacked Area: 'line_3_d_100_stacked_area'
+    - Pie / Donut
+        - 2-D Pie
+            - Pie: 'pie_2_d_pie'
+            - Pie of Pie: 'pie_2_d_pie_of_pie'
+            - Bar of Pie: 'pie_2_d_bar_of_pie'
+        - 3-D Pie
+            - Pie: 'pie_3_d_pie'
+        - Doughnut: 'pie_doughnut'
+    - Statistical
+        - Histogram: 'statistical_histogram'
+        - Box & Whisker: 'statistical_box_whisker'
+        - Pareto: 'statistical_pareto'
+    - Scatter / Bubble
+        - Scatter
+            - Scatter: 'scatter_scatter'
+            - Scatter with Straight Lines: 'scatter_straight_lines'
+            - Scatter with Smooth Lines: 'scatter_smooth_lines'
+            - Scatter with Straight Lines & Markers: 'scatter_straight_lines_markers'
+            - Scatter with Smooth Lines & Markers: 'scatter_smooth_lines_markers'
+        - Bubble
+            - Bubble: 'scatter_bubble'
+            - 3-D Bubble: 'scatter_3_d_bubble'
+    - Combo
+        - Clustered Column - Line: 'combo_clustered_column_line'
+        - Clustered Column - Line on Secondary Axis: 'combo_clustered_column_line_secondary_axis'
+        - Stacked Area - Clustered Column: 'combo_stacked_area_clustered_column'
+    - Extra
+        - Waterfall: 'extra_waterfall'
+        - Funnel: 'extra_funnel'
+        - Surface
+            - 3-D Surface: 'extra_3_d_surface'
+            - Wireframe 3-D Surface: 'extra_wireframe_3_d_surface'
+            - Contour: 'extra_contour'
+            - Wireframe Contour: 'extra_wireframe_contour'
+        - Radar
+            - Radar: 'extra_radar'
+            - Radar with Markers: 'extra_radar_markers'
+            - Filled Radar: 'extra_filled_radar'
+    - Recommended pivot tables: 'recommended_pivot_tables'
+
+    Note: If selecting a chart that needs multi range selection, please select the range before calling this function.
     """
-    pyautogui.hotkey('alt', 'f1')  # Create a chart
+    CHART_TYPE_COMBOS = [
+        # Bar Charts
+        {"type": "bar", "combo": "alt+n+c+2"},
+        {"type": "bar_2_d_clustered_column", "combo": [""]},
+        {"type": "bar_2_d_stacked_column", "combo": ["right"]},
+        {"type": "bar_2_d_100_stacked_column", "combo": ["right", "right"]},
+        {"type": "bar_3_d_clustered_column", "combo": ["down"]},
+        {"type": "bar_3_d_stacked_column", "combo": ["down", "right"]},
+        {"type": "bar_3_d_100_stacked_column", "combo": ["down", "right", "right"]},
+        {"type": "bar_3_d_column", "combo": ["down", "right", "right", "right"]},
+        {"type": "bar_2_d_clustered_bar", "combo": ["down", "down"]},
+        {"type": "bar_2_d_stacked_bar", "combo": ["down", "down", "right"]},
+        {"type": "bar_2_d_100_stacked_bar", "combo":  ["down", "down", "right", "right"]},
+        {"type": "bar_3_d_clustered_bar", "combo": ["down", "down", "down"]},
+        {"type": "bar_3_d_stacked_bar", "combo": ["down", "down", "down", "right"]},
+        {"type": "bar_3_d_100_stacked_bar", "combo": ["down", "down", "down", "right", "right"]},
+
+        # Hierarchy Charts
+        {"type": "hierarchy", "combo": "alt+n+h+i"},
+        {"type": "hierarchy_treemap", "combo": [""]},
+        {"type": "hierarchy_sunbrust", "combo": ["right"]},
+
+        # Line / Area Charts
+        {"type": "line", "combo": "alt+n+n+1"},
+        {"type": "line_2_d_line", "combo": [""]},
+        {"type": "line_2_d_stacked_line", "combo": ["right"]},
+        {"type": "line_2_d_100_stacked_line", "combo": ["right", "right"]},
+        {"type": "line_2_d_line_with_markers", "combo": ["right", "right", "right"]},
+        {"type": "line_2_d_stacked_line_with_markers", "combo": ["right", "right", "right", "right"]},
+        {"type": "line_2_d_100_stacked_line_with_markers", "combo": ["right", "right", "right", "right", "right"]},
+        {"type": "line_3_d_line", "combo": ["down", "down"]},
+        {"type": "line_2_d_area", "combo": ["down", "down", "down"]},
+        {"type": "line_2_d_stacked_area", "combo": ["down", "down", "down", "right"]},
+        {"type": "line_2_d_100_stacked_area", "combo": ["down", "down", "down", "right", "right"]},
+        {"type": "line_3_d_area", "combo": ["down", "down", "down", "down"]},
+        {"type": "line_3_d_stacked_area", "combo": ["down", "down", "down", "down", "right"]},
+        {"type": "line_3_d_100_stacked_area", "combo": ["down", "down", "down", "down", "right", "right"]},
+
+        # Pie / Donut Charts
+        {"type": "pie", "combo": "alt+n+q"},
+        {"type": "pie_2_d_pie", "combo": [""]},
+        {"type": "pie_2_d_pie_of_pie", "combo": ["right"]},
+        {"type": "pie_2_d_bar_of_pie", "combo": ["right", "right"]},
+        {"type": "pie_3_d_pie", "combo": ["down"]},
+        {"type": "pie_doughnut", "combo": ["down", "down"]},
+
+        # Statistical Charts
+        {"type": "statistical", "combo": "alt+n+s+a"},
+        {"type": "statistical_histogram", "combo": [""]},
+        {"type": "statistical_pareto", "combo": ["right"]},
+        {"type": "statistical_box_whisker", "combo": ["down"]},
+
+        # Scatter / Bubble Charts
+        {"type": "scatter", "combo": "alt+n+d"},
+        {"type": "scatter_scatter", "combo": [""]},
+        {"type": "scatter_smooth_lines_markers", "combo": ["right"]},
+        {"type": "scatter_smooth_lines", "combo": ["right", "right", "right"]},
+        {"type": "scatter_straight_lines_markers", "combo": ["right", "right", "right", "right"]},
+        {"type": "scatter_straight_lines", "combo": ["right", "right", "right", "right", "right"]},
+        {"type": "scatter_bubble", "combo": ["down", "down"]},
+        {"type": "scatter_3_d_bubble", "combo": ["down", "down", "right"]},
+
+        # Combo Charts
+        {"type": "combo", "combo": "alt+n+s+d"},
+        {"type": "combo_clustered_column_line", "combo": [""]},
+        {"type": "combo_clustered_column_line_secondary_axis", "combo": ["right"]},
+        {"type": "combo_stacked_area_clustered_column", "combo": ["right", "right"]},
+
+        # Extra Charts
+        {"type": "extra", "combo": "alt+n+i+1"},
+        {"type": "extra_waterfall", "combo": [""]},
+        {"type": "extra_funnel", "combo": ["down"]},
+        {"type": "extra_3_d_surface", "combo": ["down", "down", "down"]},
+        {"type": "extra_wireframe_3_d_surface", "combo": ["down", "down", "down", "right"]},
+        {"type": "extra_contour", "combo": ["down", "down", "down", "right", "right"]},
+        {"type": "extra_wireframe_contour", "combo": ["down", "down", "down", "right", "right", "right"]},
+        {"type": "extra_radar", "combo": ["down", "down", "down", "down"]},
+        {"type": "extra_radar_markers", "combo": ["down", "down", "down", "down", "right"]},
+        {"type": "extra_filled_radar", "combo": ["down", "down", "down", "down", "right", "right"]},
+
+        # Recommended Pivot Tables
+        {"type": "recommended_pivot_tables", "combo":  "alt+n+s+p+tab+tab+tab"}
+    ]
+    # Extract the first word from chart_type
+    chart_category = chart_type.split('_')[0]
+
+    # Find the initial combo for the chart category
+    initial_combo = next((item['combo'] for item in CHART_TYPE_COMBOS if item['type'] == chart_category), None)
+
+    if initial_combo:
+        # Execute the initial combo
+        pyautogui.hotkey(*initial_combo.split('+'))
+
+        # Find the specific chart type combo
+        specific_combo = next((item['combo'] for item in CHART_TYPE_COMBOS if item['type'] == chart_type), None)
+
+        if specific_combo:
+            # Execute each key in the specific combo sequentially
+            for key in specific_combo:
+                if key:  # Skip empty strings
+                    pyautogui.press(key)
+        
+        # Press enter to confirm the chart selection
+        pyautogui.press('enter')
+    else:
+        print(f"No combo found for chart type: {chart_type}")
     
 def execute_hotkey(hotkey, extra_args=None):
     """
@@ -268,13 +450,29 @@ def drag_fill_cells(start_cell, direction, num_cells, extra_args=None):
     elif direction == 'right':
         pyautogui.hotkey('ctrl', 'r')  # Fill right
         
-def enable_auto_filter(extra_args=None):
+def enable_auto_filter(range_string=None, extra_args=None):
     """
-    Enables the autofilter option in Excel.
-    Has to be called before using the filter/sort functions.
+    Enables the auto filter feature in Excel for selected range or complete sheet if no range passed.
+    
+    Args:
+        range_string (str, optional): A string representing the range to apply auto filter.
+                                      Example: 'A1:D10'. If not provided, applies to the entire sheet.
     """
-    move_to_cell('A1')  # Move to the first cell
-    pyautogui.hotkey('ctrl', 'shift', 'l')  # Auto filter the selected range
+    if range_string:
+        # Use the Go To dialog to select the range
+        pyautogui.hotkey('ctrl', 'g')  # Open the "Go To" dialog
+        pyautogui.write(range_string)  # Enter the range
+        pyautogui.press('enter')  # Confirm the selection
+    else:
+        # Move to the first cell to apply filter to the entire sheet
+        pyautogui.hotkey('ctrl', 'home')  # Move to cell A1
+
+    # Enable auto filter
+    pyautogui.hotkey('ctrl', 'shift', 'l')  # Auto filter the selected range or entire sheet
+
+    # If a range was specified, move back to A1 to avoid leaving the cursor in the filtered range
+    if range_string:
+        pyautogui.hotkey('ctrl', 'home')
     
 
 def simple_sort(sort_order, sort_col, extra_args=None):

@@ -76,18 +76,14 @@ TOOLING = [
     },
     {
         "name": "select_range",
-        "description": "Selects a range of cells in Excel.",
+        "description": "Selects a range or multiple ranges of cells in Excel.",
         "parameters": {
-            "start_cell": {
+            "range_string": {
                 "type": "string",
-                "description": "The address of the starting cell (e.g., 'A1', 'B3').",
-            },
-            "end_cell": {
-                "type": "string",
-                "description": "The address of the ending cell (e.g., 'C5', 'D10').",
+                "description": "A string representing one or more cell ranges. Multiple ranges should be separated by commas. Example: 'A1:C5, E1:G5, I1:K5'."
             }
         },
-        "required": ["start_cell", "end_cell"],
+        "required": ["range_string"],
         "function_path": "app_tools.excel.helper_functions"
     },
     {
@@ -96,8 +92,14 @@ TOOLING = [
         "function_path": "app_tools.excel.helper_functions"
     },
     {
-        "name": "create_simple_chart",
-        "description": "Creates a simple chart in Excel from the selected range of cells.",
+        "name": "create_chart",
+        "description": "Creates a simple chart in Excel from the selected range of cells. Chart types:\n\n1. Bar Charts:\n   a) 2-D Column: bar_2_d_clustered_column (default), bar_2_d_stacked_column, bar_2_d_100_stacked_column\n   b) 3-D Column: bar_3_d_clustered_column, bar_3_d_stacked_column, bar_3_d_100_stacked_column, bar_3_d_column\n   c) 2-D Bar: bar_2_d_clustered_bar, bar_2_d_stacked_bar, bar_2_d_100_stacked_bar\n   d) 3-D Bar: bar_3_d_clustered_bar, bar_3_d_stacked_bar, bar_3_d_100_stacked_bar\n2. Hierarchy: hierarchy_treemap, hierarchy_sunbrust\n3. Line / Area:\n   a) 2-D Line: line_2_d_line, line_2_d_stacked_line, line_2_d_100_stacked_line, line_2_d_line_with_markers, line_2_d_stacked_line_with_markers, line_2_d_100_stacked_line_with_markers\n   b) 3-D Line: line_3_d_line\n   c) 2-D Area: line_2_d_area, line_2_d_stacked_area, line_2_d_100_stacked_area\n   d) 3-D Area: line_3_d_area, line_3_d_stacked_area, line_3_d_100_stacked_area\n4. Pie / Donut:\n   a) 2-D Pie: pie_2_d_pie, pie_2_d_pie_of_pie, pie_2_d_bar_of_pie\n   b) 3-D Pie: pie_3_d_pie\n   c) Doughnut: pie_doughnut\n5. Statistical: statistical_histogram, statistical_box_whisker, statistical_pareto\n6. Scatter / Bubble:\n   a) Scatter: scatter_scatter, scatter_straight_lines, scatter_smooth_lines, scatter_straight_lines_markers, scatter_smooth_lines_markers\n   b) Bubble: scatter_bubble, scatter_3_d_bubble\n7. Combo: combo_clustered_column_line, combo_clustered_column_line_secondary_axis, combo_stacked_area_clustered_column\n8. Extra:\n   a) Waterfall: extra_waterfall\n   b) Funnel: extra_funnel\n   c) Surface: extra_3_d_surface, extra_wireframe_3_d_surface, extra_contour, extra_wireframe_contour\n   d) Radar: extra_radar, extra_radar_markers, extra_filled_radar\n9. Recommended pivot tables: recommended_pivot_tables\n\nUsage: Specify the desired chart_type as a string parameter. If not specified, defaults to 'bar_2_d_clustered_column'. For multi-range selection charts, select the range before calling this function. Ensure Excel window is active and visible when calling.",
+        "parameters": {
+            "chart_type": {
+                "type": "string",
+                "description": "The type of chart to be created."
+            }
+        },
         "function_path": "app_tools.excel.helper_functions"
     },
     {
@@ -146,7 +148,13 @@ TOOLING = [
     },
     {
         "name": "enable_auto_filter",
-        "description": "Enables the auto filter feature in Excel for the selected range of cells.",
+        "description": "Enables the auto filter feature in Excel. If a range is specified (e.g., 'A1:D10'), it applies to that range. If no range is provided, it applies to the complete sheet.",
+        "parameters": {
+            "range_string": {
+                "type": "string",
+                "description": "Optional. A string representing the range to apply auto filter (e.g., 'A1:D10')."
+            }
+        },
         "function_path": "app_tools.excel.helper_functions"
     },
     {

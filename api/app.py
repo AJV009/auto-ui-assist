@@ -42,8 +42,8 @@ async def task_corrector(body: TaskCorrectorBody):
         agent_name="task_corrector",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "app_list": body.app_list},
-        provider="anthropic",
-        model="claude_sonnet",
+        provider="openai",
+        model="gpt-4o-mini",
         image_base64=body.image_base64
     )
 
@@ -74,8 +74,8 @@ async def task_refiner_stage_2(body: TaskRefinerStage2Body):
         agent_name="task_refiner_stage_2",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "refinement_data": body.refinement_data},
-        provider="anthropic",
-        model="claude_sonnet"
+        provider="openai",
+        model="gpt-4o-mini"
     )
 
 class HighLevelActionPlanCreationBody(BaseRequestBody):
@@ -90,8 +90,8 @@ async def high_level_action_plan_creation(body: HighLevelActionPlanCreationBody)
         agent_name=f"high_level_action_plan_creation_{body.app}",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task},
-        provider="anthropic",
-        model="claude_sonnet",
+        provider="openai",
+        model="gpt-4o",
         image_base64=body.image_base64
     )
 
@@ -107,8 +107,8 @@ async def action_plan_verifier(body: ActionPlanVerifierBody):
         agent_name="action_plan_verifier",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "step_list": body.step_list},
-        provider="anthropic",
-        model="claude_sonnet",
+        provider="openai",
+        model="gpt-4o-mini",
         image_base64=body.image_base64
     )
 
@@ -140,8 +140,8 @@ async def task_step_summarization(body: TaskStepSummarizationBody):
         agent_name="task_step_summarization",
         system_prompt_params={"os": body.os},
         fewshot_params={"task": body.task, "step_list": body.step_list},
-        provider="anthropic",
-        model="claude_sonnet"
+        provider="openai",
+        model="gpt-4o-mini"
     )
 
 class LowLevelActionPlanCreationBody(BaseRequestBody):

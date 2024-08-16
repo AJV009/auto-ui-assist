@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QL
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 import pyautogui
 import psutil
+import comtypes
 
 from utils.apps import app_list, office_app_list
 from utils.user import get_userid
@@ -41,7 +42,8 @@ class APIThread(QThread):
     def run(self):
         method = getattr(self.main_window, self.method_name)
         result = method(**self.kwargs)
-        self.result_signal.emit(result)
+        if result:
+            self.result_signal.emit(result)
 
     def handle_uncaught_exception(self, exctype, value, traceback_obj):
         traceback_text = ''.join(traceback.format_exception(exctype, value, traceback_obj))
@@ -507,6 +509,7 @@ class MainWindow(QMainWindow):
             response = requests.post(low_level_action_plan_creation_uri, json=low_level_action_plan_creation_payload)
             response.raise_for_status()
             response = json.loads(response.text)
+            self.api_thread.log_signal.emit(f"Response: {response}", "Debug")
         except Exception as e:
             self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
@@ -573,8 +576,10 @@ class MainWindow(QMainWindow):
             return
 
         for i, action in enumerate(low_level_action_plan):
-            if (not isinstance(action, list) and len(action) <= 0) or (not isinstance(action, dict) and len(action) <= 0):
+            self.log_message(f"Action {i}: {action}", "Debug")
+            if ((not isinstance(action, list)) or (not isinstance(action, dict))) and len(action) <= 0:
                 continue
+            self.log_message(f"Action running: {action[f'action_{i+1}']}", "Debug")
             action = action[f'action_{i+1}']
             if 'action_function_call' in action:
                 self.log_message(f"Action: {action}", "Debug")
