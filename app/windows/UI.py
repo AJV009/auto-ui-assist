@@ -1,3 +1,7 @@
+# Auto UI Assist
+# This application provides an automated UI assistance tool using PyQt5 for the GUI and various APIs for task processing.
+
+# 1. Imports and Setup
 import sys
 import os
 import requests
@@ -8,7 +12,7 @@ from datetime import datetime
 import traceback
 import warnings
 warnings.simplefilter("ignore", UserWarning)
-sys.coinit_flags = 2
+sys.coinit_flags = 2  # Set COM threading model
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
                              QLineEdit, QPushButton, QTextEdit, QHBoxLayout, QMessageBox,
@@ -18,15 +22,22 @@ import pyautogui
 import psutil
 import comtypes
 
+# Custom utility imports
 from utils.apps import app_list, office_app_list
 from utils.user import get_userid
 from utils.common import get_temp_path, get_temp_session_path, encode_image
 from utils.api import retry_api_call
 from action.screenshot import capture_screenshot
 
-API_URL="http://44.209.219.172:8000"
+# API endpoint
+API_URL = "http://44.209.219.172:8000"
 
+# 2. APIThread Class
 class APIThread(QThread):
+    """
+    A custom QThread subclass for handling API calls asynchronously.
+    This prevents the GUI from freezing during API operations.
+    """
     log_signal = pyqtSignal(str, str)
     result_signal = pyqtSignal(dict)
     reset_signal = pyqtSignal()
@@ -40,56 +51,54 @@ class APIThread(QThread):
         self.reset_signal.connect(self.main_window.reset_app_state)
 
     def run(self):
+        """Execute the specified method with given arguments."""
         method = getattr(self.main_window, self.method_name)
         result = method(**self.kwargs)
         if result:
             self.result_signal.emit(result)
 
     def handle_uncaught_exception(self, exctype, value, traceback_obj):
+        """Handle any uncaught exceptions in the thread."""
         traceback_text = ''.join(traceback.format_exception(exctype, value, traceback_obj))
         error_message = f"Uncaught exception: {exctype.__name__}: {str(value)}\n\n{traceback_text}"
         self.log_signal.emit(error_message, "Error")
         self.reset_signal.emit()
 
+# 3. MainWindow Class
 class MainWindow(QMainWindow):
+    """
+    The main application window class.
+    Handles the GUI and core functionality of the Auto UI Assist tool.
+    """
+
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle("Auto UI Assist")
-        # Get the screen dimensions
-        screen_geometry = QDesktopWidget().screenGeometry()
-        screen_width = screen_geometry.width()
-        screen_height = screen_geometry.height()
-
-        # Set the window dimensions similar to the Windows Run dialog box
-        window_width = 550
-        window_height = 400
-
-        # Calculate the position of the window at the bottom right corner
-        x = screen_width - window_width - 10  # Adjust the horizontal margin as needed
-        y = screen_height - window_height - 70  # Adjust the vertical margin as needed
-
-        # Set the window geometry
-        self.setGeometry(x, y, window_width, window_height)
-        # self.setMinimumSize(500, 300)
-
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
-        self.layout = QVBoxLayout(self.central_widget)
-
-        self.init_logs_section()
-        self.init_input_section()
-
-        self.current_stage = "task"
-
-        self.setStyleSheet(self.load_styles())
-
+        self.setup_window_geometry()
+        self.setup_ui()
         self.setup_backend()
-
         self.api_thread = None
 
+    # 3.1 UI Setup Methods
+    def setup_window_geometry(self):
+        """Set up the window size and position."""
+        screen_geometry = QDesktopWidget().screenGeometry()
+        window_width, window_height = 550, 400
+        x = screen_geometry.width() - window_width - 10
+        y = screen_geometry.height() - window_height - 70
+        self.setGeometry(x, y, window_width, window_height)
+
+    def setup_ui(self):
+        """Set up the user interface components."""
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.layout = QVBoxLayout(self.central_widget)
+        self.init_logs_section()
+        self.init_input_section()
+        self.setStyleSheet(self.load_styles())
+
     def load_styles(self):
+        """Load and return CSS styles for the UI."""
         return """
             QMainWindow {
                 background-color: #333333;
@@ -128,37 +137,34 @@ class MainWindow(QMainWindow):
         """
 
     def init_logs_section(self):
+        """Initialize the logs section of the UI."""
         logs_layout = QVBoxLayout()
-
         logs_label = QLabel("Logs:")
         self.logs_text = QTextEdit()
         self.logs_text.setReadOnly(True)
-
         logs_layout.addWidget(logs_label)
         logs_layout.addWidget(self.logs_text)
-
         self.layout.addLayout(logs_layout)
 
     def init_input_section(self):
+        """Initialize the input section of the UI."""
         self.input_section = QWidget()
         input_layout = QHBoxLayout(self.input_section)
-
         self.input_textbox = QLineEdit()
         self.input_textbox.setPlaceholderText("Enter your task")
         self.input_button = QPushButton("Submit")
         self.input_button.clicked.connect(self.handle_input)
         self.input_textbox.returnPressed.connect(self.input_button.click)
-
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.cancel_process)
-
         input_layout.addWidget(self.input_textbox)
         input_layout.addWidget(self.input_button)
         input_layout.addWidget(self.cancel_button)
-
         self.layout.addWidget(self.input_section)
 
+    # 3.2 Backend Setup Method
     def setup_backend(self):
+        """Set up backend-related attributes and configurations."""
         self.app_name = "autoUIAssist"
         self.app_pid = os.getpid()
         self.work_app_pid = None
@@ -169,26 +175,25 @@ class MainWindow(QMainWindow):
         self.api_url = API_URL
         self.os_apps = app_list(self.user_session_uuid)
         self.action_history = []
+        self.current_stage = "task"
 
+    # 3.3 Logging Method
     def log_message(self, message, log_type="Info"):
-        message = message.strip()  # Remove whitespace and newline characters from both ends
-
+        """Log a message with a specified type and format."""
+        message = message.strip()
         log_colors_emojis = {
-            "Warning": ("⚠️", "#ff9800"),  # Orange
-            "Info": ("ℹ️", "#ffffff"),  # White
-            "Debug": ("🐞", "#00ffff"),  # Cyan
-            "User Input": ("📢", "#00ff00"),  # Bright Green
-            "Error": ("❌", "#ff0000")  # Bright Red
+            "Warning": ("⚠️", "#ff9800"),
+            "Info": ("ℹ️", "#ffffff"),
+            "Debug": ("🐞", "#00ffff"),
+            "User Input": ("📢", "#00ff00"),
+            "Error": ("❌", "#ff0000")
         }
-
-        emoji, color = log_colors_emojis.get(log_type, ("", "black"))  # Get the emoji and color based on the log_type, default to empty string and black if not found
-
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Get the current timestamp
-
+        emoji, color = log_colors_emojis.get(log_type, ("", "black"))
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         formatted_message = f'<font color="{color}">{emoji} [{log_type}] [{current_time}] {message}</font>'
         self.logs_text.append(formatted_message)
 
-        # Write logs to a file in self.temp_session_path
+        # Write logs to a file
         log_file_path = os.path.join(self.temp_session_path, "session_log.txt")
         with open(log_file_path, "a", encoding="utf-8") as log_file:
             log_file.write(f"{emoji} [{log_type}] [{current_time}] {message}\n")
@@ -197,7 +202,9 @@ class MainWindow(QMainWindow):
             error_message = f"An error occurred.<br>Error Message: {message}<br>Please check the log file at: <br>{log_file_path}<br><br>Maybe close the app and start again if the error persists."
             QMessageBox.critical(self, "Error", f'<font color="black">{error_message}</font>')
 
+    # 3.4 Input Handling Method
     def handle_input(self):
+        """Handle user input based on the current stage of the application."""
         user_input = self.input_textbox.text()
         if user_input.lower() in ["exit", "quit"]:
             self.log_message("Application terminated by the user.", "Info")
@@ -212,93 +219,81 @@ class MainWindow(QMainWindow):
                 if self.current_stage == "task":
                     self.log_message(f"User Task: {user_input}", "User Input")
                     self.user_task = user_input
-                    self.api_thread = APIThread(self, "task_corrector", user_task=self.user_task)
-                    self.api_thread.log_signal.connect(self.log_message)
-                    self.api_thread.result_signal.connect(self.process_task_corrector_result)
-                    self.api_thread.start()
-                    self.input_textbox.setEnabled(False)  # Disable the text box
-                    self.input_button.setEnabled(False)  # Disable the button
+                    self.start_api_thread("task_corrector", user_task=self.user_task)
                 elif self.current_stage == "action_plan":
                     self.log_message(f"User Correction: {user_input}", "User Input")
-                    self.api_thread = APIThread(self, "action_plan_refiner", feedback=user_input, step_list=self.step_list)
-                    self.api_thread.log_signal.connect(self.log_message)
-                    self.api_thread.result_signal.connect(self.process_action_plan_refiner_result)
-                    self.api_thread.start()
-                    self.input_textbox.setEnabled(False)  # Disable the text box
-                    self.input_button.setEnabled(False)  # Disable the button
+                    self.start_api_thread("action_plan_refiner", feedback=user_input, step_list=self.step_list)
             else:
                 if self.current_stage != "question":
                     QMessageBox.warning(self, "Input Error", "Please enter the required information.")
 
         self.input_textbox.clear()
 
-    def show_question_section(self):
-        self.api_thread = APIThread(self, "task_refiner_stage_1", user_task=self.user_task)
+    # 3.5 API Thread Management Methods
+    def start_api_thread(self, method_name, **kwargs):
+        """Start an API thread for a given method with specified arguments."""
+        self.api_thread = APIThread(self, method_name, **kwargs)
         self.api_thread.log_signal.connect(self.log_message)
-        self.api_thread.result_signal.connect(self.process_task_refiner_stage_1_result)
+        self.api_thread.result_signal.connect(getattr(self, f"process_{method_name}_result"))
         self.api_thread.start()
-        self.input_textbox.setEnabled(False)  # Disable the text box
-        self.input_button.setEnabled(False)  # Disable the button
+        self.input_textbox.setEnabled(False)
+        self.input_button.setEnabled(False)
+
+    # 3.6 Question Handling Methods
+    def show_question_section(self):
+        """Initiate the question refinement process."""
+        self.start_api_thread("task_refiner_stage_1", user_task=self.user_task)
 
     def show_next_question(self):
+        """Display the next question or proceed to task refinement."""
         if len(self.user_answers) < len(self.refinement_questions):
             current_question = self.refinement_questions[len(self.user_answers)]
             self.log_message(f"Refinement Question: {current_question}", "Debug")
             self.input_textbox.setPlaceholderText(f"Q: {current_question}")
-            self.input_textbox.setEnabled(True)  # Enable the text box
-            self.input_button.setEnabled(True)  # Enable the button
+            self.input_textbox.setEnabled(True)
+            self.input_button.setEnabled(True)
         else:
-            self.input_textbox.setEnabled(False)  # Disable the text box
-            self.input_button.setEnabled(False)  # Disable the button
+            self.input_textbox.setEnabled(False)
+            self.input_button.setEnabled(False)
             qna_str = self.compile_user_answers()
-            self.api_thread = APIThread(self, "task_refiner_stage_2", refinement_data=qna_str)
-            self.api_thread.log_signal.connect(self.log_message)
-            self.api_thread.result_signal.connect(self.process_task_refiner_stage_2_result)
-            self.api_thread.start()
+            self.start_api_thread("task_refiner_stage_2", refinement_data=qna_str)
 
     def process_user_answer(self, user_answer):
+        """Process the user's answer and move to the next question or stage."""
         self.user_answers.append(user_answer)
         if len(self.user_answers) < len(self.refinement_questions):
             self.show_next_question()
         else:
-            self.input_textbox.setEnabled(False)  # Disable the text box
-            self.input_button.setEnabled(False)  # Disable the button
+            self.input_textbox.setEnabled(False)
+            self.input_button.setEnabled(False)
             qna_str = self.compile_user_answers()
-            self.api_thread = APIThread(self, "task_refiner_stage_2", refinement_data=qna_str)
-            self.api_thread.log_signal.connect(self.log_message)
-            self.api_thread.result_signal.connect(self.process_task_refiner_stage_2_result)
-            self.api_thread.start()
+            self.start_api_thread("task_refiner_stage_2", refinement_data=qna_str)
 
     def compile_user_answers(self):
-        qna_str = ""
-        for question, answer in zip(self.refinement_questions, self.user_answers):
-            qna_str += f"Q: {question}\nA: {answer}\n\n"
-        return qna_str
+        """Compile user answers into a formatted string."""
+        return "\n\n".join([f"Q: {q}\nA: {a}" for q, a in zip(self.refinement_questions, self.user_answers)])
 
+    # 3.7 Action Plan Methods
     def show_action_plan_section(self):
-        self.api_thread = APIThread(self, "high_level_action_plan_creation", user_task=self.user_task, first_office_app_type=self.first_office_app_type)
-        self.api_thread.log_signal.connect(self.log_message)
-        self.api_thread.result_signal.connect(self.process_high_level_action_plan_creation_result)
-        self.api_thread.start()
-        self.input_textbox.setEnabled(False)  # Disable the text box
-        self.input_button.setEnabled(False)  # Disable the button
+        """Initiate the creation of a high-level action plan."""
+        self.start_api_thread("high_level_action_plan_creation", user_task=self.user_task, first_office_app_type=self.first_office_app_type)
 
     def verify_action_plan(self):
+        """Verify the created action plan."""
         MAX_ATTEMPTS = 3
         CURRENT_ATTEMPT = 0
         while CURRENT_ATTEMPT < MAX_ATTEMPTS:
             CURRENT_ATTEMPT += 1
             self.log_message(f"Attempt {CURRENT_ATTEMPT} to verify the action plan", "Debug")
-            self.api_thread = APIThread(self, "action_plan_verifier", user_task=self.user_task, step_list=json.dumps(self.step_list))
-            self.api_thread.log_signal.connect(self.log_message)
-            self.api_thread.result_signal.connect(self.process_action_plan_verifier_result)
-            self.api_thread.start()
+            self.start_api_thread("action_plan_verifier", user_task=self.user_task, step_list=json.dumps(self.step_list))
             break
         else:
             self.log_message("Action plan not verified after 3 attempts. Exiting...", "Error")
             sys.exit()
 
+    # 3.8 Timer Methods
     def start_timer(self):
+        """Start a timer for user input."""
         self.time_left = 5
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
@@ -307,6 +302,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.timer_label)
 
     def update_timer(self):
+        """Update the timer and handle timeout."""
         self.time_left -= 1
         self.timer_label.setText(f"Time remaining: {self.time_left} seconds")
         if self.time_left == 0:
@@ -314,8 +310,18 @@ class MainWindow(QMainWindow):
             self.log_message("Time is up! Using scratchpad.", "Warning")
             self.handle_input()
 
+    # 3.9 API Call Methods (continued)
     @retry_api_call(max_attempts=3, delay=1)
     def task_corrector(self, user_task):
+        """
+        Call the task corrector API to refine and correct the user's task.
+        
+        Args:
+            user_task (str): The original task input by the user.
+        
+        Returns:
+            dict: The API response containing the corrected task and other details.
+        """
         self.api_thread.log_signal.emit(f"Correcting task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
@@ -341,6 +347,15 @@ class MainWindow(QMainWindow):
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_1(self, user_task):
+        """
+        Call the task refiner stage 1 API to generate refinement questions.
+        
+        Args:
+            user_task (str): The corrected user task.
+        
+        Returns:
+            dict: The API response containing refinement questions.
+        """
         self.api_thread.log_signal.emit(f"Refining task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
@@ -365,6 +380,15 @@ class MainWindow(QMainWindow):
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_2(self, refinement_data):
+        """
+        Call the task refiner stage 2 API to generate the final refined task.
+        
+        Args:
+            refinement_data (str): Compiled questions and answers from the refinement process.
+        
+        Returns:
+            dict: The API response containing the final refined task.
+        """
         self.api_thread.log_signal.emit(f"Refining task with answers: {refinement_data}", "Debug")
         task_refiner_stage_2_uri = f"{self.api_url}/task_refiner_stage_2"
         task_refiner_stage_2_payload = {
@@ -387,6 +411,16 @@ class MainWindow(QMainWindow):
 
     @retry_api_call(max_attempts=3, delay=1)
     def high_level_action_plan_creation(self, user_task, first_office_app_type):
+        """
+        Call the high-level action plan creation API to generate a series of steps for the task.
+        
+        Args:
+            user_task (str): The refined user task.
+            first_office_app_type (str): The type of office application to be used.
+        
+        Returns:
+            dict: The API response containing the high-level action plan steps.
+        """
         self.api_thread.log_signal.emit(f"Creating high level action plan for task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
@@ -412,6 +446,16 @@ class MainWindow(QMainWindow):
 
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_verifier(self, user_task, step_list):
+        """
+        Call the action plan verifier API to check if the generated plan is valid.
+        
+        Args:
+            user_task (str): The refined user task.
+            step_list (str): JSON string of the high-level action plan steps.
+        
+        Returns:
+            dict: The API response containing verification results.
+        """
         self.api_thread.log_signal.emit(f"Verifying action plan for task: {user_task}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
@@ -438,6 +482,16 @@ class MainWindow(QMainWindow):
 
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_refiner(self, feedback, step_list):
+        """
+        Call the action plan refiner API to improve the action plan based on feedback.
+        
+        Args:
+            feedback (str): User feedback on the action plan.
+            step_list (str): The current action plan steps.
+        
+        Returns:
+            dict: The API response containing the refined action plan.
+        """
         self.api_thread.log_signal.emit(f"Refining action plan with feedback: {feedback}", "Debug")
         desktop_image = pyautogui.screenshot()
         desktop_image_encoded = encode_image(IMAGE_object=desktop_image)
@@ -462,7 +516,11 @@ class MainWindow(QMainWindow):
         self.api_thread.log_signal.emit(f"Refined steps: {print_response}", "Debug")
         return response
 
+    # 3.10 Action Execution Methods
     def execute_actions(self):
+        """
+        Start the execution of the action plan by loading the appropriate module and executing the first action.
+        """
         module = importlib.import_module(f"app_tools.{self.first_office_app_type}.function_call_repo")
         self.TOOLING = module.TOOLING
 
@@ -470,6 +528,9 @@ class MainWindow(QMainWindow):
         self.execute_next_action()
     
     def execute_next_action(self):
+        """
+        Execute the next action in the action plan or finish the task if all actions are completed.
+        """
         if self.current_action_index < len(self.step_list):
             step = self.step_list[self.current_action_index][f"step_{self.current_action_index+1}"]
             self.log_message(f"Step: {step}", "Debug")
@@ -482,16 +543,31 @@ class MainWindow(QMainWindow):
             )
             app_window_ann_screenshot_base64 = encode_image(app_window_ann_screenshot_path)
 
-            self.api_thread = APIThread(self, "low_level_action_plan_creation", user_task=self.user_task, step=step, first_office_app_type=self.first_office_app_type, app_window_ann_screenshot_base64=app_window_ann_screenshot_base64, TOOLING=self.TOOLING)
-            self.api_thread.log_signal.connect(self.log_message)
-            self.api_thread.result_signal.connect(self.process_low_level_action_plan_creation_result)
-            self.api_thread.start()
+            self.start_api_thread("low_level_action_plan_creation", 
+                                  user_task=self.user_task, 
+                                  step=step, 
+                                  first_office_app_type=self.first_office_app_type, 
+                                  app_window_ann_screenshot_base64=app_window_ann_screenshot_base64, 
+                                  TOOLING=self.TOOLING)
         else:
             self.log_message("Task execution completed.", "Info")
             self.reset_app_state()
 
     @retry_api_call(max_attempts=3, delay=1)
     def low_level_action_plan_creation(self, user_task, step, first_office_app_type, app_window_ann_screenshot_base64, TOOLING):
+        """
+        Call the low-level action plan creation API to generate specific actions for a step.
+        
+        Args:
+            user_task (str): The refined user task.
+            step (str): The current high-level step to be broken down.
+            first_office_app_type (str): The type of office application being used.
+            app_window_ann_screenshot_base64 (str): Base64 encoded screenshot of the application window.
+            TOOLING (dict): Available tools and functions for the specific application.
+        
+        Returns:
+            dict: The API response containing the low-level action plan.
+        """
         self.api_thread.log_signal.emit(f"Creating low level action plan for step: {step}", "Debug")
         low_level_action_plan_creation_uri = f"{self.api_url}/low_level_action_plan_creation"
         low_level_action_plan_creation_payload = {
@@ -516,8 +592,15 @@ class MainWindow(QMainWindow):
         print_response = response['action_list']
         self.api_thread.log_signal.emit(f"Low level action plan: {print_response}", "Debug")
         return response
-    
+
+    # 3.11 Result Processing Methods
     def process_task_corrector_result(self, result):
+        """
+        Process the result from the task corrector API and determine the next step.
+        
+        Args:
+            result (dict): The API response from the task corrector.
+        """
         self.user_task = result["corrected_task"]
         launch_app_list = result["selected_app_list"]
         try:
@@ -537,20 +620,44 @@ class MainWindow(QMainWindow):
             self.show_action_plan_section()
 
     def process_task_refiner_stage_1_result(self, result):
+        """
+        Process the result from the task refiner stage 1 API and initiate the questioning process.
+        
+        Args:
+            result (dict): The API response containing refinement questions.
+        """
         self.refinement_questions = result["refinement_question_list"]
         self.user_answers = []
         self.show_next_question()
 
     def process_task_refiner_stage_2_result(self, result):
+        """
+        Process the result from the task refiner stage 2 API and move to action plan creation.
+        
+        Args:
+            result (dict): The API response containing the final refined task.
+        """
         self.user_task = result["refined_task"]
         self.current_stage = "action_plan"
         self.show_action_plan_section()
 
     def process_high_level_action_plan_creation_result(self, result):
+        """
+        Process the result from the high-level action plan creation API and initiate plan verification.
+        
+        Args:
+            result (dict): The API response containing the high-level action plan.
+        """
         self.step_list = result["step_list"]
         self.verify_action_plan()
 
     def process_action_plan_verifier_result(self, result):
+        """
+        Process the result from the action plan verifier API and determine the next step.
+        
+        Args:
+            result (dict): The API response containing verification results.
+        """
         verified = result["verified"]
         if 'true' == verified.strip().lower():
             self.log_message("Action plan verified", "Debug")
@@ -559,15 +666,27 @@ class MainWindow(QMainWindow):
             self.log_message("Action plan not verified", "Warning")
             self.log_message(f"Scratchpad: {result['scratchpad']}", "Warning")
             self.input_textbox.setPlaceholderText("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5 sec): ")
-            self.input_textbox.setEnabled(True)  # Enable the text box
-            self.input_button.setEnabled(True)  # Enable the button
+            self.input_textbox.setEnabled(True)
+            self.input_button.setEnabled(True)
             self.start_timer()
 
     def process_action_plan_refiner_result(self, result):
+        """
+        Process the result from the action plan refiner API and start executing the refined plan.
+        
+        Args:
+            result (dict): The API response containing the refined action plan.
+        """
         self.step_list = result["step_list"]
         self.execute_actions()
 
     def process_low_level_action_plan_creation_result(self, result):
+        """
+        Process the result from the low-level action plan creation API and execute the actions.
+        
+        Args:
+            result (dict): The API response containing the low-level action plan.
+        """
         self.log_message("Processing low level action plan", "Debug")
         self.log_message(f"Action list: {result}", "Debug")
         low_level_action_plan = result['action_list']
@@ -608,11 +727,11 @@ class MainWindow(QMainWindow):
                 module = importlib.import_module(function_path)
                 function_call = getattr(module, function_name)
                 
-                # switch to app before executing the function
+                # Switch to app before executing the function
                 switch_app_function = getattr(module, "switch_to_app")
                 switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
                 
-                # Now try to execute the function
+                # Execute the function
                 try:
                     self.log_message(f"Executing function '{function_name}'", "Debug")
                     function_call(**parameters)
@@ -621,8 +740,12 @@ class MainWindow(QMainWindow):
 
         self.current_action_index += 1
         self.execute_next_action()
-                
+
+    # 3.12 Utility Methods
     def reset_app_state(self):
+        """
+        Reset the application state to its initial condition, ready for a new task.
+        """
         self.current_stage = "task"
         self.user_task = ""
         self.user_answers = []
@@ -637,13 +760,52 @@ class MainWindow(QMainWindow):
         self.log_message("Application reset. You can start with a new task now.", "Info")
 
     def cancel_process(self):
+        """
+        Cancel the current process and reset the application state.
+        """
         if self.api_thread and self.api_thread.isRunning():
             self.api_thread.terminate()
             self.log_message("Process cancelled by the user.", "Warning")
         self.reset_app_state()
 
+# 4. Main Execution
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
+
+# 5. Code Structure Overview
+# The Auto UI Assist application is structured as follows:
+# 
+# 5.1. Imports and Setup:
+#   - Import necessary libraries and modules
+#   - Set up system configurations
+# 
+# 5.2. APIThread Class:
+#   - Handles asynchronous API calls
+#   - Manages exceptions and signals results back to the main thread
+# 
+# 5.3. MainWindow Class:
+#   - The core of the application, handling the GUI and logic
+#   - Divided into several sections:
+#     5.3.1. Initialization and UI Setup
+#     5.3.2. Backend Setup
+#     5.3.3. Logging
+#     5.3.4. Input Handling
+#     5.3.5. API Thread Management
+#     5.3.6. Question Handling
+#     5.3.7. Action Plan Methods
+#     5.3.8. Timer Methods
+#     5.3.9. API Call Methods
+#     5.3.10. Action Execution Methods
+#     5.3.11. Result Processing Methods
+#     5.3.12. Utility Methods
+# 
+# 5.4. Main Execution:
+#   - Creates the QApplication instance
+#   - Initializes and shows the MainWindow
+#   - Starts the event loop
+# 
+# This structure allows for a modular and organized approach to handling
+# the complex task of UI automation, from user input to task execution.

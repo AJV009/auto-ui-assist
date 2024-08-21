@@ -2,6 +2,19 @@ import os
 import re
 
 def prompt_loader(agent_name):
+    """
+    Load and parse prompt templates for a given agent.
+
+    Args:
+        agent_name (str): The name of the agent to load prompts for.
+
+    Returns:
+        dict: A dictionary containing the system prompt and few-shot messages,
+              or None if the prompt file doesn't exist.
+
+    The function reads a text file from the 'prompt_lib' directory and parses its content
+    to extract the system prompt and few-shot examples for the specified agent.
+    """
     file_name = f"prompt_lib/{agent_name}.txt"
     
     if not os.path.exists(file_name):
@@ -9,6 +22,7 @@ def prompt_loader(agent_name):
     
     with open(file_name, 'r') as file:
         content = file.read()
+    # Replace newlines with escaped newlines for proper parsing
     content = re.sub(r'\n', '\\n', content)
     
     prompt_template = {
@@ -16,12 +30,14 @@ def prompt_loader(agent_name):
         'fewshot_messages': []
     }
     
+    # Extract system prompt
     system_prompt_pattern = r'\[\[prompt_template-system_prompt\]\](.*?)\[\[prompt_template-system_prompt\]\]'
     system_prompt_match = re.search(system_prompt_pattern, content, re.DOTALL)
     
     if system_prompt_match:
         prompt_template['system_prompt'] = system_prompt_match.group(1).replace('\\"', '"').strip()
     
+    # Extract few-shot examples
     fewshot_pattern = r'\[\[prompt_template-fewshot\]\](.*?)\[\[prompt_template-fewshot\]\]'
     fewshot_match = re.search(fewshot_pattern, content, re.DOTALL)
 
@@ -40,3 +56,7 @@ def prompt_loader(agent_name):
                 prompt_template['fewshot_messages'].append({'role': current_role, 'content': message})
     
     return prompt_template
+
+# This utility file handles loading and parsing prompt templates for different agents.
+# It reads a specially formatted text file and extracts the system prompt and few-shot examples.
+# The extracted data is returned in a structured format for use in the main application.

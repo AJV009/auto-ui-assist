@@ -1,7 +1,28 @@
 import re
 
 def xmlResponseToDict(xml_response):
+    """
+    Parse an XML-like response string into a Python dictionary.
+
+    Args:
+        xml_response (str): The XML-like string to parse.
+
+    Returns:
+        dict: A dictionary representation of the XML structure.
+
+    This function recursively parses an XML-like string, handling nested tags,
+    lists, and simple key-value pairs.
+    """
     def parse_tag(tag_content):
+        """
+        Parse a single XML tag and its content.
+
+        Args:
+            tag_content (str): The content of a single XML tag.
+
+        Returns:
+            dict: A dictionary representation of the tag content, or None if invalid.
+        """
         if not tag_content:
             return None
         
@@ -13,6 +34,7 @@ def xmlResponseToDict(xml_response):
             tag_value = tag_match.group(2).strip()
             
             if tag_name.endswith('_list'):
+                # Handle list-type tags
                 items = re.findall(r'<(\w+)>(.*?)</\1>', tag_value, re.DOTALL)
                 
                 if items:
@@ -24,11 +46,12 @@ def xmlResponseToDict(xml_response):
                     
                     return {tag_name: parsed_items}
                 else:
+                    # Handle simple list items
                     items = re.split(r'\s*\n\s*', tag_value)
                     items = [item.strip() for item in items if item.strip()]
                     return {tag_name: items}
             else:
-                # Recursively parse nested tags
+                # Handle nested tags
                 nested_tags = re.findall(r'<(\w+)>(.*?)</\1>', tag_value, re.DOTALL)
                 if nested_tags:
                     parsed_nested_tags = {}
@@ -38,16 +61,22 @@ def xmlResponseToDict(xml_response):
                             parsed_nested_tags.update(parsed_nested_tag)
                     return {tag_name: parsed_nested_tags}
                 else:
+                    # Handle simple key-value pairs
                     return {tag_name: tag_value}
         
         return None
 
+    # Find all top-level tags in the XML response
     tags = re.findall(r'<(\w+)>(.*?)</\1>', xml_response, re.DOTALL)
     result = {}
     
+    # Parse each top-level tag
     for tag_name, tag_content in tags:
         parsed_tag = parse_tag(f'<{tag_name}>{tag_content}</{tag_name}>')
         if parsed_tag:
             result.update(parsed_tag)
     
     return result
+
+# This utility file provides a function to parse XML-like responses from AI models into Python dictionaries.
+# It handles nested structures, lists, and simple key-value pairs, making it easier to work with structured responses in the main application.
