@@ -31,6 +31,7 @@ from action.screenshot import capture_screenshot
 
 # API endpoint
 API_URL = "http://44.209.219.172:8000"
+# API_URL = "http://localhost:8585"
 
 # 2. APIThread Class
 class APIThread(QThread):
@@ -344,6 +345,31 @@ class MainWindow(QMainWindow):
         print_response = response['corrected_task']
         self.api_thread.log_signal.emit(f"Corrected task: {print_response}", "Debug")
         return response
+    
+    def process_task_corrector_result(self, result):
+        """
+        Process the result from the task corrector API and determine the next step.
+        
+        Args:
+            result (dict): The API response from the task corrector.
+        """
+        self.user_task = result["corrected_task"]
+        launch_app_list = result["selected_app_list"]
+        try:
+            self.first_office_app, self.first_office_app_type = office_app_list(os_apps=launch_app_list)
+            self.first_office_app_name = self.first_office_app_type[1]
+            self.first_office_app_type = self.first_office_app_type[0]
+        except Exception as e:
+            self.log_message(f"Error getting office application: {str(e)}", "Error")
+            self.reset_app_state()
+            return
+        if result["refinement"]:
+            self.log_message("Refinement requested", "Warning")
+            self.current_stage = "question"
+            self.show_question_section()
+        else:
+            self.current_stage = "action_plan"
+            self.show_action_plan_section()
 
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_1(self, user_task):
@@ -378,6 +404,17 @@ class MainWindow(QMainWindow):
         self.api_thread.log_signal.emit(f"Refinement questions: {print_response}", "Debug")
         return response
 
+    def process_task_refiner_stage_1_result(self, result):
+        """
+        Process the result from the task refiner stage 1 API and initiate the questioning process.
+        
+        Args:
+            result (dict): The API response containing refinement questions.
+        """
+        self.refinement_questions = result["refinement_question_list"]
+        self.user_answers = []
+        self.show_next_question()
+
     @retry_api_call(max_attempts=3, delay=1)
     def task_refiner_stage_2(self, refinement_data):
         """
@@ -408,6 +445,17 @@ class MainWindow(QMainWindow):
         print_response = response['refined_task']
         self.api_thread.log_signal.emit(f"Final refined task: {print_response}", "Debug")
         return response
+
+    def process_task_refiner_stage_2_result(self, result):
+        """
+        Process the result from the task refiner stage 2 API and move to action plan creation.
+        
+        Args:
+            result (dict): The API response containing the final refined task.
+        """
+        self.user_task = result["refined_task"]
+        self.current_stage = "action_plan"
+        self.show_action_plan_section()
 
     @retry_api_call(max_attempts=3, delay=1)
     def high_level_action_plan_creation(self, user_task, first_office_app_type):
@@ -443,6 +491,16 @@ class MainWindow(QMainWindow):
         print_response = response['step_list']
         self.api_thread.log_signal.emit(f"Step planner: {print_response}", "Debug")
         return response
+    
+    def process_high_level_action_plan_creation_result(self, result):
+        """
+        Process the result from the high-level action plan creation API and initiate plan verification.
+        
+        Args:
+            result (dict): The API response containing the high-level action plan.
+        """
+        self.step_list = result["step_list"]
+        self.verify_action_plan()
 
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_verifier(self, user_task, step_list):
@@ -480,6 +538,25 @@ class MainWindow(QMainWindow):
         self.api_thread.log_signal.emit(f"Verified: {print_response_verified} | Scratchpad: {print_response_scratchpad}", "Debug")
         return response
 
+    def process_action_plan_verifier_result(self, result):
+        """
+        Process the result from the action plan verifier API and determine the next step.
+        
+        Args:
+            result (dict): The API response containing verification results.
+        """
+        verified = result["verified"]
+        if 'true' == verified.strip().lower():
+            self.log_message("Action plan verified", "Debug")
+            self.execute_actions()
+        else:
+            self.log_message("Action plan not verified", "Warning")
+            self.log_message(f"Scratchpad: {result['scratchpad']}", "Warning")
+            self.input_textbox.setPlaceholderText("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5 sec): ")
+            self.input_textbox.setEnabled(True)
+            self.input_button.setEnabled(True)
+            self.start_timer()
+
     @retry_api_call(max_attempts=3, delay=1)
     def action_plan_refiner(self, feedback, step_list):
         """
@@ -515,6 +592,16 @@ class MainWindow(QMainWindow):
         print_response = response['step_list']
         self.api_thread.log_signal.emit(f"Refined steps: {print_response}", "Debug")
         return response
+
+    def process_action_plan_refiner_result(self, result):
+        """
+        Process the result from the action plan refiner API and start executing the refined plan.
+        
+        Args:
+            result (dict): The API response containing the refined action plan.
+        """
+        self.step_list = result["step_list"]
+        self.execute_actions()
 
     # 3.10 Action Execution Methods
     def execute_actions(self):
@@ -589,96 +676,13 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.api_thread.log_signal.emit(f"Error: {str(e)}\n\n{traceback.format_exc()}", "Error")
             raise e
-        print_response = response['action_list']
-        self.api_thread.log_signal.emit(f"Low level action plan: {print_response}", "Debug")
-        return response
-
-    # 3.11 Result Processing Methods
-    def process_task_corrector_result(self, result):
-        """
-        Process the result from the task corrector API and determine the next step.
-        
-        Args:
-            result (dict): The API response from the task corrector.
-        """
-        self.user_task = result["corrected_task"]
-        launch_app_list = result["selected_app_list"]
         try:
-            self.first_office_app, self.first_office_app_type = office_app_list(os_apps=launch_app_list)
-            self.first_office_app_name = self.first_office_app_type[1]
-            self.first_office_app_type = self.first_office_app_type[0]
+            print_response = response['action_list']
+            self.api_thread.log_signal.emit(f"Low level action plan: {print_response}", "Debug")
         except Exception as e:
-            self.log_message(f"Error getting office application: {str(e)}", "Error")
-            self.reset_app_state()
-            return
-        if result["refinement"]:
-            self.log_message("Refinement requested", "Warning")
-            self.current_stage = "question"
-            self.show_question_section()
-        else:
-            self.current_stage = "action_plan"
-            self.show_action_plan_section()
-
-    def process_task_refiner_stage_1_result(self, result):
-        """
-        Process the result from the task refiner stage 1 API and initiate the questioning process.
-        
-        Args:
-            result (dict): The API response containing refinement questions.
-        """
-        self.refinement_questions = result["refinement_question_list"]
-        self.user_answers = []
-        self.show_next_question()
-
-    def process_task_refiner_stage_2_result(self, result):
-        """
-        Process the result from the task refiner stage 2 API and move to action plan creation.
-        
-        Args:
-            result (dict): The API response containing the final refined task.
-        """
-        self.user_task = result["refined_task"]
-        self.current_stage = "action_plan"
-        self.show_action_plan_section()
-
-    def process_high_level_action_plan_creation_result(self, result):
-        """
-        Process the result from the high-level action plan creation API and initiate plan verification.
-        
-        Args:
-            result (dict): The API response containing the high-level action plan.
-        """
-        self.step_list = result["step_list"]
-        self.verify_action_plan()
-
-    def process_action_plan_verifier_result(self, result):
-        """
-        Process the result from the action plan verifier API and determine the next step.
-        
-        Args:
-            result (dict): The API response containing verification results.
-        """
-        verified = result["verified"]
-        if 'true' == verified.strip().lower():
-            self.log_message("Action plan verified", "Debug")
-            self.execute_actions()
-        else:
-            self.log_message("Action plan not verified", "Warning")
-            self.log_message(f"Scratchpad: {result['scratchpad']}", "Warning")
-            self.input_textbox.setPlaceholderText("Please help correct the action plan (if left empty will use scratchpad to refine it further. Field timesout in 5 sec): ")
-            self.input_textbox.setEnabled(True)
-            self.input_button.setEnabled(True)
-            self.start_timer()
-
-    def process_action_plan_refiner_result(self, result):
-        """
-        Process the result from the action plan refiner API and start executing the refined plan.
-        
-        Args:
-            result (dict): The API response containing the refined action plan.
-        """
-        self.step_list = result["step_list"]
-        self.execute_actions()
+            self.api_thread.log_signal.emit("No action detected", "Warning")
+            response = {"action_list": None}
+        return response
 
     def process_low_level_action_plan_creation_result(self, result):
         """
@@ -690,54 +694,53 @@ class MainWindow(QMainWindow):
         self.log_message("Processing low level action plan", "Debug")
         self.log_message(f"Action list: {result}", "Debug")
         low_level_action_plan = result['action_list']
-        if not low_level_action_plan:
-            self.log_message("No action detected", "Warning")
-            return
 
-        for i, action in enumerate(low_level_action_plan):
-            self.log_message(f"Action {i}: {action}", "Debug")
-            if ((not isinstance(action, list)) or (not isinstance(action, dict))) and len(action) <= 0:
-                continue
-            self.log_message(f"Action running: {action[f'action_{i+1}']}", "Debug")
-            action = action[f'action_{i+1}']
-            if 'action_function_call' in action:
-                self.log_message(f"Action: {action}", "Debug")
-                function_name = action['action_function_call']
-                if "action_scratchpad" in action:
-                    action_scratchpad = action["action_scratchpad"]
-                    history_note = f"""
-        Function Called: {function_name}
-        Action Scratchpad: {action_scratchpad}
-                    """
-                else:
-                    history_note = f"""
-        Function Called: {function_name}
-                    """
-                self.action_history.append(history_note)
-                if "parameters" in action:
-                    parameters = action['parameters']
-                    parameters["extra_args"] = {"temp_session_step_path": self.temp_session_path}
-                else:
-                    parameters = {"extra_args": {"temp_session_step_path": self.temp_session_path}}
+        if low_level_action_plan:
+            for i, action in enumerate(low_level_action_plan):
+                self.log_message(f"Action {i}: {action}", "Debug")
+                if ((not isinstance(action, list)) or (not isinstance(action, dict))) and len(action) <= 0:
+                    continue
+                self.log_message(f"Action running: {action[f'action_{i+1}']}", "Debug")
+                action = action[f'action_{i+1}']
+                if 'action_function_call' in action:
+                    self.log_message(f"Action: {action}", "Debug")
+                    function_name = action['action_function_call']
+                    if "action_scratchpad" in action:
+                        action_scratchpad = action["action_scratchpad"]
+                        history_note = f"""
+            Function Called: {function_name}
+            Action Scratchpad: {action_scratchpad}
+                        """
+                    else:
+                        history_note = f"""
+            Function Called: {function_name}
+                        """
+                    self.action_history.append(history_note)
+                    if "parameters" in action:
+                        parameters = action['parameters']
+                        parameters["extra_args"] = {"temp_session_step_path": self.temp_session_path}
+                    else:
+                        parameters = {"extra_args": {"temp_session_step_path": self.temp_session_path}}
 
-                for tool in self.TOOLING:
-                    if tool['name'] == function_name:
-                        function_path = tool['function_path']
-                        break
-                module = importlib.import_module(function_path)
-                function_call = getattr(module, function_name)
-                
-                # Switch to app before executing the function
-                switch_app_function = getattr(module, "switch_to_app")
-                switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
-                
-                # Execute the function
-                try:
-                    self.log_message(f"Executing function '{function_name}'", "Debug")
-                    function_call(**parameters)
-                except Exception as e:
-                    self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
-
+                    for tool in self.TOOLING:
+                        if tool['name'] == function_name:
+                            function_path = tool['function_path']
+                            break
+                    module = importlib.import_module(function_path)
+                    function_call = getattr(module, function_name)
+                    
+                    # Switch to app before executing the function
+                    switch_app_function = getattr(module, "switch_to_app")
+                    switch_app_function(extra_args={"temp_session_step_path": self.temp_session_path})
+                    
+                    # Execute the function
+                    try:
+                        self.log_message(f"Executing function '{function_name}'", "Debug")
+                        function_call(**parameters)
+                    except Exception as e:
+                        self.log_message(f"Error executing function '{function_name}': {str(e)}", "Error")
+        else:
+            self.log_message("No actions detected, skipping execution", "Warning")
         self.current_action_index += 1
         self.execute_next_action()
 

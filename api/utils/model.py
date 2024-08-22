@@ -6,7 +6,7 @@ import anthropic
 import openai
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Initialize API clients
 anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -53,7 +53,7 @@ def model_loader(provider, model, system_prompt, message_array, userid, sessioni
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": "image/jpeg",
+                        "media_type": "image/png",
                         "data": image_base64,
                     }
                 },
@@ -83,7 +83,7 @@ def model_loader(provider, model, system_prompt, message_array, userid, sessioni
                 {
                     "type": "image_url", 
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{image_base64}",
+                        "url": f"data:image/png;base64,{image_base64}",
                     }
                 },
                 {
