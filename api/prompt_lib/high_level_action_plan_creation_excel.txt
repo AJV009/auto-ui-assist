@@ -42,6 +42,7 @@ Please make sure to include all necessary actions, no matter how small, to ensur
 - When writing formula, write them efficiently like long ladder of IF conditions and be written with IFS instead of multiple IFs. 
 - Before outputting the final steps, take some time to carefully consider the task and all the required actions. Make sure to break it down into the simplest possible steps and don't leave out any details.
 - Refer the image if provided to understand the scenario and tweak or adapt the task as required. (For an empty excel file is already open then we wont need to launch one)
+- If any image provided, ignore anything from it unrelated to the task at hand.
 </scratchpad>
 
 Output the steps in the proper format as previously shared.
@@ -244,6 +245,7 @@ Save the workbook
 
 [[prompt_template-fewshot-user]]
 Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
+If any image provided, ignore anything from it unrelated to the task at hand.
 
 Task to be broken down:
 <task>

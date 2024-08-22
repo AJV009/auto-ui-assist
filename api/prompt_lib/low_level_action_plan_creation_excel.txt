@@ -69,6 +69,7 @@ Please make sure to include all necessary actions, no matter how small, to ensur
 - Try to use action functions effectively for navigation and execution of certain steps.
 - Do not use movements involving mouse like drag and stuff. Strictly use keyboard or the provided tooling.
 - Use the provided image to adapt the new changes, the provided task might not always be accurate. The action list you generate should fullfill the task but also adapt with the image provided.
+- If any image provided, ignore anything from it unrelated to the task at hand.
 </scratchpad>
 
 Output the steps in the proper format as previously shared.
@@ -268,6 +269,7 @@ Input the average formula in cell B5 to calculate the average age of the individ
 
 [[prompt_template-fewshot-user]]
 Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
+If any image provided, ignore anything from it unrelated to the task at hand.
 
 The following tasks or actions have already been executed:
 <previously_executed>

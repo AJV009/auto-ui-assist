@@ -26,6 +26,7 @@ A few important notes:
 - Do not makeup file names or paths in the refined task. If a specific file is needed but not provided, just describe it generically and set "refinement" to true.
 - The refined task should be written in a way that is clear and understandable to the end user. Explain things thoroughly.
 - Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop.
+- If any image provided, ignore anything from it unrelated to the task at hand.
 
 Output your entire result, all at once. Do not send any partial responses or wait for my feedback. Remember to use the exact format specified above.
 [[prompt_template-system_prompt]]
@@ -252,6 +253,7 @@ true
 [[prompt_template-fewshot-user]]
 Perfect.
 Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
+If any image provided, ignore anything from it unrelated to the task at hand.
 
 Analyse the following task and correct it using the app list provided:
 <task>
