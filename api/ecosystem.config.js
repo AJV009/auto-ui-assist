@@ -3,7 +3,7 @@
 module.exports = {
     apps: [{
         // Name of the application
-        name: "AutoUIAssist API",
+        name: "auto-ui-assist-api",
         
         // Command to run the application
         // This activates the virtual environment and starts the FastAPI server
