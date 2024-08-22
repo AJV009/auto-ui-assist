@@ -1,4 +1,6 @@
 import os
+import base64
+
 from dotenv import load_dotenv
 import anthropic
 import openai
@@ -9,6 +11,13 @@ load_dotenv()
 # Initialize API clients
 anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def is_base64(s):
+    try:
+        base64.b64decode(s)
+        return True
+    except Exception:
+        return False
 
 def model_loader(provider, model, system_prompt, message_array, userid, sessionid, max_tokens=4096, temperature=0.0, image_base64=None):
     """
@@ -36,15 +45,15 @@ def model_loader(provider, model, system_prompt, message_array, userid, sessioni
 
     if provider == "anthropic":
         # Handle Anthropic models (e.g., Claude)
-        if image_base64:
+        if image_base64 and is_base64(image_base64):
             # Format the message for image input
             message_text = message_array[-1]["content"]
             message_array[-1]["content"] = [
                 {
-                    "type": "image", 
+                    "type": "image",
                     "source": {
-                        "media_type": "image/jpeg",
                         "type": "base64",
+                        "media_type": "image/jpeg",
                         "data": image_base64,
                     }
                 },
@@ -67,7 +76,7 @@ def model_loader(provider, model, system_prompt, message_array, userid, sessioni
         # Handle OpenAI models (e.g., GPT-3.5, GPT-4)
         # Add system prompt to the beginning of the message array
         message_array = [{"role": "system", "content": system_prompt}] + message_array
-        if image_base64:
+        if image_base64 and is_base64(image_base64):
             # Format the message for image input
             message_text = message_array[-1]["content"]
             message_array[-1]["content"] = [

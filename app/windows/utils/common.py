@@ -47,7 +47,7 @@ def get_input_with_timeout(prompt, timeout):
 def encode_image(image_path=None, IMAGE_object=None):
     if IMAGE_object:
         output = BytesIO()
-        IMAGE_object.save(output, format='PNG')
+        IMAGE_object.save(output, format='JPEG')
         im_data = output.getvalue()
         return base64.b64encode(im_data).decode('utf-8')
 
