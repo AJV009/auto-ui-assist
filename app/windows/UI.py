@@ -277,7 +277,7 @@ class MainWindow(QMainWindow):
     # 3.7 Action Plan Methods
     def show_action_plan_section(self):
         """Initiate the creation of a high-level action plan."""
-        self.start_api_thread("high_level_action_plan_creation", user_task=self.user_task, first_office_app_type=self.first_office_app_type)
+        self.start_api_thread("high_level_action_plan_creation", user_task=self.user_task, first_office_app_type=self.first_office_app_type, TOOLING=self.TOOLING)
 
     def verify_action_plan(self):
         """Verify the created action plan."""
@@ -359,6 +359,8 @@ class MainWindow(QMainWindow):
             self.first_office_app, self.first_office_app_type = office_app_list(os_apps=launch_app_list)
             self.first_office_app_name = self.first_office_app_type[1]
             self.first_office_app_type = self.first_office_app_type[0]
+            self.module = importlib.import_module(f"app_tools.{self.first_office_app_type}.function_call_repo")
+            self.TOOLING = self.module.TOOLING
         except Exception as e:
             self.log_message(f"Error getting office application: {str(e)}", "Error")
             self.reset_app_state()
@@ -458,7 +460,7 @@ class MainWindow(QMainWindow):
         self.show_action_plan_section()
 
     @retry_api_call(max_attempts=3, delay=1)
-    def high_level_action_plan_creation(self, user_task, first_office_app_type):
+    def high_level_action_plan_creation(self, user_task, first_office_app_type, TOOLING):
         """
         Call the high-level action plan creation API to generate a series of steps for the task.
         
@@ -479,6 +481,7 @@ class MainWindow(QMainWindow):
             "os": "windows",
             "task": user_task,
             "app": first_office_app_type,
+            "tooling": json.dumps(TOOLING),
             "image_base64": desktop_image_encoded,
         }
         try:
@@ -608,9 +611,6 @@ class MainWindow(QMainWindow):
         """
         Start the execution of the action plan by loading the appropriate module and executing the first action.
         """
-        module = importlib.import_module(f"app_tools.{self.first_office_app_type}.function_call_repo")
-        self.TOOLING = module.TOOLING
-
         self.current_action_index = 0
         self.execute_next_action()
     

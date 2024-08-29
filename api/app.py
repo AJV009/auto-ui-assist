@@ -148,6 +148,7 @@ class HighLevelActionPlanCreationBody(BaseRequestBody):
     Request body model for the high level action plan creation endpoint.
     """
     app: str
+    tooling: str
     image_base64: str
 
 @app.post("/high_level_action_plan_creation")
@@ -166,7 +167,7 @@ async def high_level_action_plan_creation(body: HighLevelActionPlanCreationBody)
         sessionid=body.sessionid,
         agent_name=f"high_level_action_plan_creation_{body.app}",
         system_prompt_params={"os": body.os},
-        fewshot_params={"task": body.task},
+        fewshot_params={"task": body.task, "tooling": body.tooling},
         provider="openai",
         model="gpt-4o",
         image_base64=body.image_base64

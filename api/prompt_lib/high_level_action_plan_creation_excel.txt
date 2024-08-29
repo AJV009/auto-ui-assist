@@ -247,10 +247,17 @@ Save the workbook
 Refer the image if provided to understand the scenario and tweak the corrected task as required. Images are the current state of the desktop/App.
 If any image provided, ignore anything from it unrelated to the task at hand.
 
-Task to be broken down:
+This is new: Following is a list of supported actions that you can use to break down the task: (anything beyond this scope will not work)
+<tooling>
+{tooling}
+</tooling>
+
+Task to be broken down: (You have to specify the function and param that will be used to perform different tasks)
 <task>
 {task}
 </task>
+
+For exmaple: Use the create_chart function along with recommended_pivot_tables param to create a recommended pivot tables and so on..
 [[prompt_template-fewshot-user]]
 
 [[prompt_template-fewshot]]
