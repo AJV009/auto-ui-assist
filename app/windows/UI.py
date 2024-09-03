@@ -79,6 +79,7 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.setup_backend()
         self.api_thread = None
+        self.TOOLING = None
 
     # 3.1 UI Setup Methods
     def setup_window_geometry(self):
